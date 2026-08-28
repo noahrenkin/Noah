@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b12">
+<title>L’Œil du Garagiste V5 PRO</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#090b12;--panel:#111520;--panel2:#171c29;--text:#f5f7fb;--muted:#8e98ab;
+  --line:#252c3b;--purple:#8b5cf6;--blue:#3b82f6;--green:#22c55e;--orange:#f59e0b;
+  --red:#ef4444;--cyan:#06b6d4;--radius:22px;--shadow:0 18px 50px rgba(0,0,0,.28)
+}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% -10%,#1c1535 0,transparent 35%),var(--bg);color:var(--text);font:15px Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}
+.authScreen{position:fixed;inset:0;background:var(--bg);z-index:100;display:grid;place-items:center;padding:24px}
+.authBox{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow)}
+.authBox h2{margin:0 0 6px}.authBox p{color:var(--muted);margin:0 0 22px;font-size:14px}
+.authBox .field{margin-bottom:14px}
+.authBox .btn.primary{width:100%;padding:14px;text-align:center;margin-top:6px}
+.authMsg{font-size:13px;margin-top:12px;min-height:18px}
+.authMsg.err{color:var(--red)}.authMsg.ok{color:var(--green)}
+.authLink{background:none;color:#a78bfa;font-size:13px;margin-top:14px;text-decoration:underline}
+.sidebar{width:255px;background:rgba(12,15,23,.94);border-right:1px solid var(--line);padding:22px 15px;position:fixed;inset:0 auto 0 0;z-index:20}
+.brand{display:flex;gap:12px;align-items:center;padding:8px 10px 25px}.brandIcon{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--purple),#4f46e5);display:grid;place-items:center;font-size:22px;box-shadow:0 10px 30px #7c3aed44}.brand b{display:block}.brand small{color:var(--muted)}
+.nav button{width:100%;background:none;color:#aab2c3;text-align:left;padding:13px 14px;border-radius:13px;margin:3px 0}.nav button:hover,.nav button.active{background:#1d1930;color:white}.nav button.active{box-shadow:inset 3px 0 var(--purple)}
+.profile{position:absolute;bottom:20px;left:15px;right:15px;padding:13px;background:var(--panel);border:1px solid var(--line);border-radius:16px}
+.main{margin-left:255px;width:calc(100% - 255px);padding:28px;max-width:1600px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.top h1{margin:0;font-size:28px}.top p{margin:5px 0;color:var(--muted)}.actions{display:flex;gap:8px}.iconBtn{width:42px;height:42px;border-radius:13px;background:var(--panel);border:1px solid var(--line);color:white}
+.page{display:none}.page.active{display:block}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.quickCard{padding:20px;border-radius:22px;min-height:150px;position:relative;overflow:hidden;border:1px solid #ffffff10;box-shadow:var(--shadow)}.quickCard:after{content:"";position:absolute;width:130px;height:130px;border-radius:50%;right:-55px;top:-55px;background:#fff1;filter:blur(2px)}
+.q-purple{background:linear-gradient(135deg,#39206b,#5b21b6)}.q-orange{background:linear-gradient(135deg,#7c4510,#d97706)}.q-green{background:linear-gradient(135deg,#14532d,#16a34a)}.q-blue{background:linear-gradient(135deg,#123d68,#2563eb)}
+.quickCard .emoji{font-size:25px}.quickCard h3{margin:17px 0 5px}.quickCard p{margin:0;color:#d8dbea;font-size:13px;line-height:1.5}.arrow{position:absolute;right:16px;bottom:16px;width:34px;height:34px;border-radius:50%;background:#ffffff18;display:grid;place-items:center}
+.sectionHead{display:flex;justify-content:space-between;align-items:center;margin:30px 0 14px}.sectionHead h2{margin:0;font-size:19px}.link{color:#a78bfa;background:none}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:linear-gradient(180deg,#141925,#10141e);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.statGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat{padding:18px}.stat .num{font-size:27px;font-weight:800;margin-top:8px}.muted{color:var(--muted)}.green{color:var(--green)}.red{color:var(--red)}.orange{color:var(--orange)}.purple{color:#b69cff}
+.vehicle{overflow:hidden;padding:0}.vehicle img{width:100%;height:150px;object-fit:cover;background:#202633}.vehicleBody{padding:16px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.pill{display:inline-flex;padding:5px 9px;border-radius:999px;background:#ffffff0d;color:#cdd3df;font-size:12px}.score{font-weight:800}.score.good{color:var(--green)}.score.mid{color:var(--orange)}.score.bad{color:var(--red)}
+.formGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}.field input,.field select,.field textarea{width:100%;padding:12px 13px;background:#0c1018;border:1px solid var(--line);border-radius:12px;color:white;outline:none}.field textarea{min-height:90px;resize:vertical}.full{grid-column:1/-1}
+.btn{padding:12px 16px;border-radius:12px;color:white;background:#242b3a;border:1px solid var(--line);font-weight:700}.btn.primary{background:linear-gradient(135deg,var(--purple),#6366f1);border:0}.btn.greenBtn{background:#16803a}.btn.redBtn{background:#7f1d1d}.btnRow{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.result{margin-top:18px;padding:20px;border-radius:18px;background:#0c111a;border:1px solid var(--line)}.decision{font-size:28px;font-weight:900}.scoreBig{font-size:52px;font-weight:900}.meter{height:9px;background:#222938;border-radius:20px;overflow:hidden;margin:10px 0}.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--orange),var(--green))}
+.warning{padding:11px 13px;border-radius:12px;background:#2b1d08;border:1px solid #704b0b;margin-top:8px;color:#f6d28b}
+.costs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.costs .card{padding:13px}
+.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:12px;border-bottom:1px solid var(--line)}.table th{color:var(--muted);font-size:12px}
+.empty{text-align:center;padding:35px;color:var(--muted)}
+.toast{position:fixed;right:20px;bottom:20px;background:#171c29;border:1px solid var(--line);padding:13px 17px;border-radius:14px;box-shadow:var(--shadow);display:none;z-index:99}
+.modal{position:fixed;inset:0;background:#0009;display:none;place-items:center;z-index:50;padding:20px}.modalBox{background:#111520;border:1px solid var(--line);border-radius:22px;padding:22px;max-width:650px;width:100%;max-height:90vh;overflow:auto}
+@media(max-width:1050px){.quick,.statGrid{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.sidebar{width:100%;height:68px;top:auto;bottom:0;border-right:0;border-top:1px solid var(--line);padding:7px;display:flex}.brand,.profile{display:none}.nav{display:flex;width:100%;justify-content:space-around}.nav button{width:auto;font-size:0;margin:0;padding:9px}.nav button:before{font-size:20px}.nav button:nth-child(1):before{content:"⌂"}.nav button:nth-child(2):before{content:"⌕"}.nav button:nth-child(3):before{content:"🚗"}.nav button:nth-child(4):before{content:"🎯"}.nav button:nth-child(5):before{content:"📊"}.nav button:nth-child(6):before{content:"◷"}.nav button:nth-child(7):before{content:"🔧"}.nav button:nth-child(8):before{content:"⚙"}.main{margin:0;width:100%;padding:17px 14px 90px}.top h1{font-size:21px}.quick,.grid,.statGrid,.formGrid{grid-template-columns:1fr}.quickCard{min-height:125px}.costs{grid-template-columns:1fr}.table{font-size:12px}.tableWrap{overflow:auto}}
+</style>
+</head>
+<body>
+<div class="authScreen" id="authScreen">
+  <div class="authBox">
+    <div id="authStep1">
+      <h2>👁️ L'Œil du Garagiste</h2>
+      <p>Entre ton email et un code à 6 chiffres. La première fois, ça crée ton profil. Les fois suivantes, ça te reconnecte.</p>
+      <div class="field"><label>EMAIL</label><input id="authEmail" type="email" placeholder="toi@exemple.com"></div>
+      <div class="field"><label>CODE (6 chiffres)</label><input id="authPin" type="password" inputmode="numeric" maxlength="6" placeholder="••••••"></div>
+      <button class="btn primary" onclick="loginOrSignup()">Continuer</button>
+      <div id="authMsg1" class="authMsg"></div>
+    </div>
+  </div>
+</div>
+<div class="app" id="appRoot" style="display:none">
+<aside class="sidebar">
+  <div class="brand"><div class="brandIcon">👁️</div><div><b>L’ŒIL DU GARAGISTE</b><small>V5 PRO</small></div></div>
+  <nav class="nav">
+    <button class="active" data-page="home">Accueil</button><button data-page="analyze">Analyser</button>
+    <button data-page="stock">Mon Stock</button><button data-page="negotiation">Négociation</button>
+    <button data-page="business">Business</button><button data-page="history">Historique</button>
+    <button data-page="repairs">Réparations</button><button data-page="settings">Paramètres</button>
+  </nav>
+  <div class="profile"><b>👤 Noah</b><br><small class="muted">PRO GARAGE • V5 PRO</small></div>
+</aside>
+
+<main class="main">
+<header class="top"><div><h1 id="pageTitle">Bienvenue 👋</h1><p id="pageSub">Prêt à dénicher la prochaine pépite ?</p></div><div class="actions"><button class="iconBtn" onclick="notify('Notifications activées 🔔')">🔔</button><button class="iconBtn" onclick="toggleTheme()">◐</button></div></header>
+
+<section id="home" class="page active">
+  <div class="quick">
+    <div class="quickCard q-purple" onclick="go('analyze')"><span class="emoji">🔍</span><h3>ANALYSER</h3><p>Une annonce<br>Analyse complète en quelques secondes</p><span class="arrow">→</span></div>
+    <div class="quickCard q-orange" onclick="go('stock')"><span class="emoji">🚗</span><h3>MON STOCK</h3><p>Mes véhicules<br>Gère ton stock et tes performances</p><span class="arrow">→</span></div>
+    <div class="quickCard q-green" onclick="go('business')"><span class="emoji">📈</span><h3>BUSINESS</h3><p>Mes bénéfices<br>Analyse tes profits et ton évolution</p><span class="arrow">→</span></div>
+    <div class="quickCard q-blue" onclick="go('negotiation')"><span class="emoji">🤝</span><h3>NÉGOCIATION</h3><p>Calculer mon offre<br>Obtiens le meilleur prix</p><span class="arrow">→</span></div>
+  </div>
+  <div class="sectionHead"><h2>Vue d’ensemble</h2></div>
+  <div class="statGrid">
+    <div class="card stat"><span class="muted">Véhicules</span><div class="num" id="sCars">0</div></div>
+    <div class="card stat"><span class="muted">Bénéfices</span><div class="num green" id="sProfit">0 €</div></div>
+    <div class="card stat"><span class="muted">ROI moyen</span><div class="num purple" id="sROI">0%</div></div>
+    <div class="card stat"><span class="muted">En cours</span><div class="num orange" id="sPending">0</div></div>
+  </div>
+  <div class="sectionHead"><h2>Dernières analyses</h2><button class="link" onclick="go('history')">Voir tout →</button></div>
+  <div id="recent" class="grid"></div>
+</section>
+
+<section id="analyze" class="page">
+  <div class="card">
+    <div class="sectionHead"><h2>🔍 Scanner une annonce</h2><span class="pill">Analyse V5</span></div>
+    <div class="field full" style="margin-bottom:14px"><label>COLLE L’ANNONCE (optionnel)</label><textarea id="adText" placeholder="Colle ici le texte de l'annonce... L'application tentera d'identifier automatiquement les informations."></textarea></div>
+    <div class="formGrid">
+      <div class="field"><label>MARQUE</label><input id="aBrand" placeholder="Audi"></div><div class="field"><label>MODÈLE</label><input id="aModel" placeholder="A1 Sportback"></div>
+      <div class="field"><label>ANNÉE</label><input id="aYear" type="number" placeholder="2016"></div><div class="field"><label>KILOMÉTRAGE</label><input id="aKm" type="number" placeholder="125000"></div>
+      <div class="field"><label>CARBURANT</label><select id="aFuel"><option>Essence</option><option>Diesel</option><option>Hybride</option><option>Électrique</option></select></div>
+      <div class="field"><label>TRANSMISSION</label><select id="aGear"><option>Manuelle</option><option>Automatique</option></select></div>
+      <div class="field"><label>PRIX DEMANDÉ (€)</label><input id="aPrice" type="number" placeholder="8900"></div><div class="field"><label>NB PROPRIÉTAIRES</label><input id="aOwners" type="number" placeholder="2"></div>
+      <div class="field"><label>ÉTAT GÉNÉRAL</label><select id="aState"><option>Excellent</option><option>Très bon</option><option>Bon</option><option>Moyen</option><option>Mauvais</option></select></div>
+      <div class="field"><label>HISTORIQUE ENTRETIEN</label><select id="aHistory"><option>Complet</option><option>Partiel</option><option>Aucun</option></select></div>
+      <div class="field"><label>CONTRÔLE TECHNIQUE</label><select id="aCt"><option>Valide <6 mois</option><option>Valide >6 mois</option><option>Non disponible</option></select></div>
+      <div class="field"><label>URGENCE VENTE</label><select id="aUrgent"><option>Non</option><option>Oui</option></select></div>
+      <div class="field full"><label>DÉFAUTS MENTIONNÉS</label><textarea id="aDefects" placeholder="Ex.: pneus à changer, voyant moteur, rayure porte..."></textarea></div>
+    </div>
+    <div class="btnRow"><button class="btn" onclick="parseAd()">⚡ Scanner le texte</button><button class="btn primary" onclick="analyze()">🧠 Analyser</button><button class="btn" onclick="resetAnalyze()">Réinitialiser</button></div>
+    <div id="analysisResult"></div>
+  </div>
+</section>
+
+<section id="stock" class="page">
+ <div class="sectionHead"><h2>🚗 Mon Stock</h2><button class="btn primary" onclick="openVehicle()">+ Ajouter un véhicule</button></div>
+ <div id="stockList" class="grid"></div>
+</section>
+
+<section id="negotiation" class="page">
+ <div class="card"><div class="sectionHead"><h2>🎯 Calculateur de négociation</h2></div>
+  <div class="field full" style="margin-bottom:14px">
+   <label>CHOISIR UN VÉHICULE DE TON STOCK (remplit tout automatiquement)</label>
+   <select id="nCarPicker" onchange="fillNegotiationFromCar(this.value)">
+    <option value="">— Choisir un véhicule —</option>
+   </select>
+  </div>
+  <div class="formGrid">
+   <div class="field"><label>PRIX DEMANDÉ (€)</label><input id="nAsk" type="number" placeholder="9500"></div>
+   <div class="field"><label>RÉPARATIONS ESTIMÉES (€)</label><input id="nRep" type="number" placeholder="800"></div>
+   <div class="field"><label>AUTRES FRAIS (€)</label><input id="nOther" type="number" placeholder="400"></div>
+   <div class="field"><label>PRIX DE REVENTE ESTIMÉ (€)</label><input id="nSell" type="number" placeholder="11000"></div>
+   <div class="field"><label>MARGE MINIMUM SOUHAITÉE (€)</label><input id="nMargin" type="number" value="1500"></div>
+   <div class="field"><label>RABAIS DE SÉCURITÉ (€)</label><input id="nSafety" type="number" value="300"></div>
+  </div>
+  <div class="btnRow"><button class="btn primary" onclick="negotiate()">🎯 Calculer mon offre</button></div><div id="negResult"></div>
+ </div>
+</section>
+
+<section id="business" class="page">
+ <div class="sectionHead"><h2>📊 Business</h2></div>
+ <div class="statGrid"><div class="card stat"><span class="muted">Chiffre ventes</span><div class="num" id="bSales">0 €</div></div><div class="card stat"><span class="muted">Coût total</span><div class="num" id="bCost">0 €</div></div><div class="card stat"><span class="muted">Bénéfice net</span><div class="num green" id="bProfit">0 €</div></div><div class="card stat"><span class="muted">ROI moyen</span><div class="num purple" id="bROI">0%</div></div></div>
+ <div class="card" style="margin-top:14px"><h3>Performance</h3><div id="businessRows"></div></div>
+</section>
+
+<section id="history" class="page">
+ <div class="sectionHead"><h2>📜 Historique</h2></div>
+ <div class="card tableWrap"><table class="table"><thead><tr><th>Véhicule</th><th>Achat</th><th>Vente</th><th>Coût</th><th>Bénéfice</th><th>ROI</th><th>Statut</th></tr></thead><tbody id="historyBody"></tbody></table></div>
+</section>
+
+<section id="repairs" class="page">
+ <div class="card"><div class="sectionHead"><h2>🔧 Estimation des réparations</h2><span class="pill">Fourchettes indicatives</span></div>
+  <div class="formGrid">
+   <div class="field"><label>PNEUS</label><input id="rTyres" type="number" placeholder="0"></div><div class="field"><label>FREINS</label><input id="rBrakes" type="number" placeholder="0"></div>
+   <div class="field"><label>DISTRIBUTION</label><input id="rTiming" type="number" placeholder="0"></div><div class="field"><label>BATTERIE</label><input id="rBattery" type="number" placeholder="0"></div>
+   <div class="field"><label>CARROSSERIE / PEINTURE</label><input id="rBody" type="number" placeholder="0"></div><div class="field"><label>MOTEUR / BOÎTE</label><input id="rEngine" type="number" placeholder="0"></div>
+   <div class="field"><label>AUTRE</label><input id="rOther" type="number" placeholder="0"></div>
+  </div><div class="btnRow"><button class="btn primary" onclick="calcRepairs()">Calculer</button></div><div id="repairResult"></div>
+ </div>
+</section>
+
+<section id="settings" class="page">
+ <div class="card"><h2>⚙️ Paramètres</h2><p class="muted">Tes données sont sauvegardées en ligne, liées à ton email : <b id="settingsEmail"></b></p><div class="btnRow"><button class="btn" onclick="logout()">🚪 Se déconnecter</button><button class="btn redBtn" onclick="clearAll()">🗑️ Effacer toutes les données</button></div></div>
+</section>
+</main>
+</div>
+<div class="modal" id="modal"><div class="modalBox"><div class="sectionHead"><h2>Ajouter / modifier</h2><button class="iconBtn" onclick="closeModal()">✕</button></div><div id="vehicleForm"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://klntpvqezsgkijvojvtu.supabase.co';
+const SUPABASE_KEY='sb_publishable_M6bmudfo2CMBYk6_2Ng3Ng_mPpvEXZP';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const KEY='oeil_garagiste_v5';
+let cars=JSON.parse(localStorage.getItem(KEY)||'[]');
+let currentUser=null;
+const $=id=>document.getElementById(id);
+const money=n=>(Number(n)||0).toLocaleString('fr-BE',{maximumFractionDigits:0})+' €';
+const pct=n=>(Number(n)||0).toFixed(1)+'%';
+
+async function loginOrSignup(){
+ const email=$('authEmail').value.trim();
+ const pin=$('authPin').value.trim();
+ const msg=$('authMsg1');
+ if(!email||!email.includes('@')){msg.textContent='Entre un email valide.';msg.className='authMsg err';return}
+ if(!/^\d{6}$/.test(pin)){msg.textContent='Le code doit faire exactement 6 chiffres.';msg.className='authMsg err';return}
+ msg.textContent='Connexion...';msg.className='authMsg';
+ let {data,error}=await sb.auth.signInWithPassword({email,password:pin});
+ if(error){
+   if(error.message&&error.message.toLowerCase().includes('invalid')){
+     const res=await sb.auth.signUp({email,password:pin});
+     if(res.error){msg.textContent='Erreur : '+res.error.message;msg.className='authMsg err';return}
+     data=res.data;
+   }else{
+     msg.textContent='Erreur : '+error.message;msg.className='authMsg err';return
+   }
+ }
+ currentUser=data.user;
+ await afterLogin();
+}
+async function logout(){
+ await sb.auth.signOut();
+ currentUser=null;
+ cars=[];
+ localStorage.removeItem(KEY);
+ $('appRoot').style.display='none';
+ $('authScreen').style.display='grid';
+ $('authEmail').value='';$('authPin').value='';
+ $('authMsg1').textContent='';
+}
+async function afterLogin(){
+ $('settingsEmail').textContent=currentUser.email;
+ await loadCarsFromCloud();
+ $('authScreen').style.display='none';
+ $('appRoot').style.display='flex';
+ renderAll();
+}
+async function loadCarsFromCloud(){
+ const {data,error}=await sb.from('cars').select('payload').eq('user_id',currentUser.id).order('updated_at',{ascending:false});
+ if(error){notify('Erreur de chargement : '+error.message);return}
+ cars=(data||[]).map(r=>r.payload);
+ localStorage.setItem(KEY,JSON.stringify(cars));
+}
+async function syncCarToCloud(car){
+ if(!currentUser)return;
+ const {error}=await sb.from('cars').upsert({id:car.id,user_id:currentUser.id,payload:car,updated_at:new Date().toISOString()});
+ if(error)notify('Erreur de sauvegarde en ligne : '+error.message);
+}
+async function deleteCarFromCloud(id){
+ if(!currentUser)return;
+ await sb.from('cars').delete().eq('id',id).eq('user_id',currentUser.id);
+}
+async function clearAllCloud(){
+ if(!currentUser)return;
+ await sb.from('cars').delete().eq('user_id',currentUser.id);
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(cars));renderAll()}
+function notify(t){const x=$('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2200)}
+function go(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.querySelector('#'+page).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));const titles={home:['Bienvenue 👋','Prêt à dénicher la prochaine pépite ?'],analyze:['Analyse','Décortique une annonce avant d’acheter.'],stock:['Mon Stock','Toutes tes voitures au même endroit.'],negotiation:['Négociation','Trouve ton prix d’offre et ton prix maximum.'],business:['Business','Suis ton argent et ta rentabilité.'],history:['Historique','Toutes tes opérations.'],repairs:['Réparations','Estime rapidement les frais.'],settings:['Paramètres','Personnalise et gère tes données.']};$('pageTitle').textContent=titles[page][0];$('pageSub').textContent=titles[page][1];if(page==='negotiation')fillNegotiationPicker()}
+function fillNegotiationPicker(){
+ const sel=$('nCarPicker');
+ const current=sel.value;
+ sel.innerHTML='<option value="">— Choisir un véhicule —</option>'+cars.map(c=>`<option value="${c.id}">${c.brand||''} ${c.model||''} (${c.year||'?'})</option>`).join('');
+ sel.value=current;
+}
+function fillNegotiationFromCar(id){
+ if(!id)return;
+ const c=cars.find(x=>String(x.id)===String(id));
+ if(!c)return;
+ $('nAsk').value=c.buy||'';
+ $('nRep').value=c.repairs||0;
+ $('nOther').value=(Number(c.transport)||0)+(Number(c.admin)||0)+(Number(c.clean)||0)+(Number(c.other)||0);
+ $('nSell').value=c.sell||'';
+}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
+function toggleTheme(){document.body.classList.toggle('light');notify('Mode visuel modifié')}
+function parseAd(){
+ let t=$('adText').value;
+ const year=t.match(/\b(20\d{2}|19\d{2})\b/); const km=t.match(/([\d\s.]{3,})\s*km/i); const price=t.match(/([\d\s.]{3,})\s*€/)||t.match(/€\s*([\d\s.]{3,})/);
+ if(year)$('aYear').value=year[1]; if(km)$('aKm').value=km[1].replace(/[^\d]/g,''); if(price)$('aPrice').value=price[1].replace(/[^\d]/g,'');
+ const brands=['Audi','BMW','Mercedes','Volkswagen','Peugeot','Renault','Citroën','Toyota','Honda','Ford','Opel','Skoda','Seat','Nissan','Kia','Hyundai','Dacia','Volvo'];
+ const b=brands.find(x=>new RegExp('\\b'+x+'\\b','i').test(t)); if(b)$('aBrand').value=b;
+ const low=t.toLowerCase(); if(/diesel|tdi|hdi|dci/.test(low))$('aFuel').value='Diesel'; else if(/hybride|hybrid/.test(low))$('aFuel').value='Hybride'; else if(/électrique|electrique|electric/.test(low))$('aFuel').value='Électrique';
+ if(/automatique|auto\b|dsg|s tronic|steptronic/.test(low))$('aGear').value='Automatique';
+ notify('Informations détectées — vérifie-les avant analyse');
+}
+function analyze(){
+ const d={brand:$('aBrand').value||'Marque inconnue',model:$('aModel').value||'Modèle inconnu',year:+$('aYear').value||0,km:+$('aKm').value||0,price:+$('aPrice').value||0,fuel:$('aFuel').value,gear:$('aGear').value,owners:+$('aOwners').value||0,state:$('aState').value,history:$('aHistory').value,ct:$('aCt').value,urgent:$('aUrgent').value,defects:$('aDefects').value};
+ let score=70, reasons=[];
+ if(d.year>=2015)score+=7; else if(d.year&&d.year<2012)score-=8;
+ if(d.km>180000) {score-=18;reasons.push('Kilométrage élevé');} else if(d.km>140000) {score-=8;reasons.push('Kilométrage à surveiller')}
+ if(d.history==='Complet')score+=8; else if(d.history==='Aucun'){score-=15;reasons.push('Historique d’entretien absent')}
+ if(d.ct==='Valide <6 mois')score+=5; else if(d.ct==='Non disponible'){score-=8;reasons.push('Contrôle technique non disponible')}
+ if(d.state==='Excellent')score+=6; else if(d.state==='Moyen')score-=8; else if(d.state==='Mauvais')score-=18;
+ if(d.urgent==='Oui')score+=3;
+ if(d.owners>=4){score-=5;reasons.push('Nombre de propriétaires élevé')}
+ const defectWords=(d.defects.match(/pneu|frein|embrayage|distribution|moteur|boîte|boite|voyant|corrosion|turbo|fuite|carrosserie/gi)||[]).length;
+ score-=Math.min(20,defectWords*4); if(defectWords)reasons.push(defectWords+' défaut(s) à contrôler');
+ score=Math.max(0,Math.min(100,score));
+ let decision=score>=80?'ACHETER':score>=60?'NÉGOCIER':'FUIR', cls=score>=80?'good':score>=60?'mid':'bad';
+ const baseRepair=Math.max(0,defectWords*250), transport=350, admin=180, clean=120, total=d.price+baseRepair+transport+admin+clean, resale=d.price?Math.round(d.price*1.17):0, profit=resale-total, roi=total?profit/total*100:0;
+ $('analysisResult').innerHTML=`<div class="result"><div class="row"><div><div class="muted">RECOMMANDATION</div><div class="decision ${cls}">${decision}</div></div><div style="text-align:right"><div class="muted">SCORE</div><div class="scoreBig ${cls}">${score}<small>/100</small></div></div></div>
+ <div class="meter"><i style="width:${score}%"></i></div><p>${score>=80?'Profil intéressant, mais contrôle physique indispensable.':score>=60?'Potentiel intéressant si le prix est négocié et les défauts maîtrisés.':'Risque trop élevé ou marge insuffisante dans cet état.'}</p>
+ <div class="costs"><div class="card"><span class="muted">Coût estimé</span><br><b>${money(total)}</b></div><div class="card"><span class="muted">Revente estimée</span><br><b>${money(resale)}</b></div><div class="card"><span class="muted">Bénéfice potentiel</span><br><b class="${profit>=0?'green':'red'}">${money(profit)}</b></div></div>
+ ${reasons.length?'<div style="margin-top:15px"><b>⚠️ Points à vérifier</b>'+reasons.map(r=>'<div class="warning">'+r+'</div>').join('')+'</div>':''}
+ <div class="btnRow"><button class="btn primary" onclick='saveAnalysis(${JSON.stringify(d).replace(/'/g,"&#39;")},${score},${total},${profit},${roi})'>💾 Ajouter au stock</button><button class="btn" onclick="go('negotiation');$('nAsk').value=${d.price};$('nRep').value=${baseRepair};$('nOther').value=${transport+admin+clean};$('nSell').value=${resale}">🎯 Négocier ce véhicule</button></div></div>`;
+}
+function saveAnalysis(d,score,total,profit,roi){d.id=Date.now();d.status='En cours';d.buy=d.price;d.sell=0;d.transport=350;d.repairs=Math.max(0,(d.defects.match(/pneu|frein|embrayage|distribution|moteur|boîte|boite|voyant|corrosion|turbo|fuite|carrosserie/gi)||[]).length*250);d.admin=180;d.clean=120;d.other=0;d.dateBuy=new Date().toISOString().slice(0,10);d.score=score;cars.unshift(d);save();syncCarToCloud(d);notify('Véhicule ajouté au stock 🚗');go('stock')}
+function resetAnalyze(){document.querySelectorAll('#analyze input,#analyze textarea').forEach(x=>x.value='');$('analysisResult').innerHTML='';$('aFuel').value='Essence';$('aGear').value='Manuelle';$('aState').value='Excellent';$('aHistory').value='Complet';$('aCt').value='Valide <6 mois';$('aUrgent').value='Non'}
+function openVehicle(id=null){
+ const c=id?cars.find(x=>x.id===id):{};
+ tempProfilePhoto=c.profilePhoto||c.photo||'';
+ tempObsPhotos=[...(c.obsPhotos||[])];
+ $('vehicleForm').innerHTML=`<div class="field full" style="margin-bottom:14px">
+ <label>PHOTO DE PROFIL</label>
+ <div style="display:flex;gap:12px;align-items:center">
+   <div id="vProfilePreview" style="width:72px;height:72px;border-radius:50%;background:#0c1018${tempProfilePhoto?` url('${tempProfilePhoto}') center/cover no-repeat`:''};border:1px solid var(--line);display:grid;place-items:center;font-size:24px;flex-shrink:0">${tempProfilePhoto?'':'🚗'}</div>
+   <div>
+     <input type="file" accept="image/*" id="vProfileInput" style="display:none" onchange="handleProfileUpload(event)">
+     <button type="button" class="btn" onclick="$('vProfileInput').click()">📷 ${tempProfilePhoto?'Changer':'Choisir'} la photo</button>
+     ${tempProfilePhoto?'<button type="button" class="btn redBtn" style="margin-left:6px" onclick="removeProfilePhoto()">Retirer</button>':''}
+   </div>
+ </div>
+ <p class="muted" style="font-size:12px;margin:6px 0 0">Photo principale, affichée dans ton stock pour reconnaître la voiture</p>
+ </div>
+ <div class="formGrid">
+ <div class="field"><label>MARQUE</label><input id="vBrand" value="${c.brand||''}"></div><div class="field"><label>MODÈLE</label><input id="vModel" value="${c.model||''}"></div>
+ <div class="field"><label>ANNÉE</label><input id="vYear" type="number" value="${c.year||''}"></div><div class="field"><label>KM</label><input id="vKm" type="number" value="${c.km||''}"></div>
+ <div class="field"><label>PRIX ACHAT (€)</label><input id="vBuy" type="number" value="${c.buy||''}"></div><div class="field"><label>PRIX VENTE (€)</label><input id="vSell" type="number" value="${c.sell||''}"></div>
+ <div class="field"><label>TRANSPORT</label><input id="vTransport" type="number" value="${c.transport||0}"></div><div class="field"><label>RÉPARATIONS</label><input id="vRep" type="number" value="${c.repairs||0}"></div>
+ <div class="field"><label>ADMIN / CT</label><input id="vAdmin" type="number" value="${c.admin||0}"></div><div class="field"><label>NETTOYAGE</label><input id="vClean" type="number" value="${c.clean||0}"></div>
+ <div class="field"><label>AUTRES</label><input id="vOther" type="number" value="${c.other||0}"></div><div class="field"><label>STATUT</label><select id="vStatus"><option ${c.status==='Achetée'?'selected':''}>Achetée</option><option ${c.status==='Vendue'?'selected':''}>Vendue</option><option ${(!c.status||c.status==='En cours')?'selected':''}>En cours</option></select></div>
+ <div class="field full"><label>NOTES INSPECTION / OBSERVATIONS</label><textarea id="vNotes">${c.notes||''}</textarea></div>
+ <div class="field full">
+   <label>PHOTOS D'OBSERVATION (état, défauts, historique)</label>
+   <div id="vObsGallery" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px"></div>
+   <input type="file" accept="image/*" id="vObsInput" style="display:none" onchange="handleObsUpload(event)">
+   <button type="button" class="btn" onclick="$('vObsInput').click()">📷 Ajouter une photo d'observation</button>
+ </div>
+ </div>
+ <div class="btnRow"><button class="btn primary" onclick="saveVehicle(${id||0})">💾 Sauver</button><button class="btn" onclick="closeModal()">Annuler</button></div>`;
+ renderObsGallery();
+ $('modal').style.display='grid'
+}
+let tempProfilePhoto='';
+let tempObsPhotos=[];
+function handleProfileUpload(e){
+ const file=e.target.files[0]; if(!file)return;
+ if(file.size>4*1024*1024){notify('Photo trop lourde (max 4 Mo)');e.target.value='';return}
+ const reader=new FileReader();
+ reader.onload=ev=>{tempProfilePhoto=ev.target.result;openVehicleRefreshProfile()};
+ reader.readAsDataURL(file);
+ e.target.value='';
+}
+function removeProfilePhoto(){tempProfilePhoto='';openVehicleRefreshProfile()}
+function openVehicleRefreshProfile(){
+ const p=$('vProfilePreview');
+ p.style.backgroundImage=tempProfilePhoto?`url('${tempProfilePhoto}')`:'';
+ p.textContent=tempProfilePhoto?'':'🚗';
+ const btnWrap=p.nextElementSibling;
+ btnWrap.innerHTML=`<input type="file" accept="image/*" id="vProfileInput" style="display:none" onchange="handleProfileUpload(event)"><button type="button" class="btn" onclick="$('vProfileInput').click()">📷 ${tempProfilePhoto?'Changer':'Choisir'} la photo</button>${tempProfilePhoto?'<button type="button" class="btn redBtn" style="margin-left:6px" onclick="removeProfilePhoto()">Retirer</button>':''}`;
+}
+function renderObsGallery(){
+ const g=$('vObsGallery');
+ if(!g)return;
+ g.innerHTML=tempObsPhotos.length?tempObsPhotos.map((p,i)=>`<div style="position:relative;width:78px;height:62px"><div style="width:100%;height:100%;border-radius:10px;background:url('${p}') center/cover no-repeat;border:1px solid var(--line)"></div><button type="button" onclick="removeObsPhotoAt(${i})" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);color:white;font-size:11px;line-height:1;display:grid;place-items:center;border:0">✕</button></div>`).join(''):'<div class="muted" style="font-size:13px">Aucune photo d\'observation</div>';
+}
+function handleObsUpload(e){
+ const file=e.target.files[0]; if(!file)return;
+ if(file.size>4*1024*1024){notify('Photo trop lourde (max 4 Mo)');e.target.value='';return}
+ const reader=new FileReader();
+ reader.onload=ev=>{tempObsPhotos.push(ev.target.result);renderObsGallery()};
+ reader.readAsDataURL(file);
+ e.target.value='';
+}
+function removeObsPhotoAt(i){tempObsPhotos.splice(i,1);renderObsGallery()}
+function closeModal(){$('modal').style.display='none'}
+function handlePhotoUpload(e){
+ const file=e.target.files[0]; if(!file)return;
+ if(file.size>4*1024*1024){notify('Photo trop lourde (max 4 Mo)');e.target.value='';return}
+ const reader=new FileReader();
+ reader.onload=ev=>{
+   tempPhotos.push(ev.target.result);
+   renderPhotoGallery();
+ };
+ reader.readAsDataURL(file);
+ e.target.value='';
+}
+function saveVehicle(id){
+ const old=id?cars.find(x=>x.id===id):{};
+ const c={...old,id:id||Date.now(),profilePhoto:tempProfilePhoto,photo:tempProfilePhoto,obsPhotos:tempObsPhotos,brand:$('vBrand').value,model:$('vModel').value,year:+$('vYear').value||0,km:+$('vKm').value||0,buy:+$('vBuy').value||0,sell:+$('vSell').value||0,transport:+$('vTransport').value||0,repairs:+$('vRep').value||0,admin:+$('vAdmin').value||0,clean:+$('vClean').value||0,other:+$('vOther').value||0,status:$('vStatus').value,notes:$('vNotes').value,dateBuy:old.dateBuy||new Date().toISOString().slice(0,10)};
+ const i=cars.findIndex(x=>x.id===c.id); if(i>=0)cars[i]=c;else cars.unshift(c);closeModal();save();syncCarToCloud(c);notify('Véhicule sauvegardé 💾')
+}
+function totals(c){const cost=(+c.buy||0)+(+c.transport||0)+(+c.repairs||0)+(+c.admin||0)+(+c.clean||0)+(+c.other||0);const profit=(+c.sell||0)-cost;return {cost,profit,roi:cost?profit/cost*100:0}}
+function renderStock(){const el=$('stockList');if(!cars.length){el.innerHTML='<div class="card empty">Aucun véhicule. Ajoute ta première voiture.</div>';return}el.innerHTML=cars.map(c=>{const t=totals(c);return `<div class="card vehicle"><div style="height:120px;${c.photo?`background:url('${c.photo}') center/cover no-repeat`:'background:linear-gradient(135deg,#20283a,#10141e);display:grid;place-items:center;font-size:45px'}">${c.photo?'':'🚗'}</div><div class="vehicleBody"><div class="row"><b>${c.brand||'—'} ${c.model||''}</b><span class="pill">${c.status||'En cours'}</span></div><p class="muted">${c.year||'—'} • ${(c.km||0).toLocaleString('fr-BE')} km</p><div class="row"><b>${money(c.buy)}</b><span class="${t.profit>=0?'green':'red'}">${money(t.profit)}</span></div><p class="muted">ROI ${pct(t.roi)}</p><div class="btnRow"><button class="btn" onclick="openVehicle(${c.id})">Modifier</button><button class="btn redBtn" onclick="removeCar(${c.id})">Supprimer</button></div></div></div>`}).join('')}
+function removeCar(id){if(confirm('Supprimer ce véhicule ?')){cars=cars.filter(c=>c.id!==id);save();deleteCarFromCloud(id);notify('Véhicule supprimé')}}
+function negotiate(){const ask=+$('nAsk').value||0,rep=+$('nRep').value||0,other=+$('nOther').value||0,sell=+$('nSell').value||0,min=+$('nMargin').value||0,safety=+$('nSafety').value||0;const max=Math.max(0,sell-rep-other-min),start=Math.max(0,max-safety),cost=start+rep+other,profit=sell-cost,roi=cost?profit/cost*100:0;$('negResult').innerHTML=`<div class="result"><div class="row"><div><div class="muted">OFFRE DE DÉPART</div><div class="scoreBig purple">${money(start)}</div></div><div><div class="muted">PRIX MAXIMUM</div><div class="scoreBig green">${money(max)}</div></div></div><div class="costs"><div class="card">Coût final<br><b>${money(cost)}</b></div><div class="card">Bénéfice<br><b class="green">${money(profit)}</b></div><div class="card">ROI<br><b class="purple">${pct(roi)}</b></div></div><p style="margin-top:16px"><b>💬 Argument :</b> « Je dois tenir compte des frais de remise en état et des autres coûts. Si on s’accorde à ${money(start)}, je peux avancer rapidement. »</p></div>`}
+function calcRepairs(){const ids=['rTyres','rBrakes','rTiming','rBattery','rBody','rEngine','rOther'];const vals=ids.map(id=>+$ (id).value||0);const total=vals.reduce((a,b)=>a+b,0);const low=Math.round(total*.8),high=Math.round(total*1.25);$('repairResult').innerHTML=`<div class="result"><div class="scoreBig">${money(total)}</div><p class="muted">Fourchette indicative : ${money(low)} à ${money(high)}</p><div class="meter"><i style="width:${Math.min(100,total/5000*100)}%"></i></div><p>Utilise ces montants comme estimation de travail. Les prix réels dépendent du véhicule, des pièces et du garage.</p></div>`}
+function renderBusiness(){let sales=0,cost=0,profit=0;cars.forEach(c=>{const t=totals(c);sales+=+c.sell||0;cost+=t.cost;profit+=t.profit});const roi=cost?profit/cost*100:0;$('bSales').textContent=money(sales);$('bCost').textContent=money(cost);$('bProfit').textContent=money(profit);$('bROI').textContent=pct(roi);$('businessRows').innerHTML=cars.length?cars.slice(0,8).map(c=>{const t=totals(c);return `<div style="padding:14px 0;border-bottom:1px solid var(--line)" class="row"><span><b>${c.brand} ${c.model}</b><br><small class="muted">${c.status}</small></span><span class="${t.profit>=0?'green':'red'}"><b>${money(t.profit)}</b><br><small>ROI ${pct(t.roi)}</small></span></div>`}).join(''):'<div class="empty">Pas encore de données business.</div>'}
+function renderHistory(){$('historyBody').innerHTML=cars.length?cars.map(c=>{const t=totals(c);return `<tr><td><b>${c.brand} ${c.model}</b></td><td>${money(c.buy)}</td><td>${money(c.sell)}</td><td>${money(t.cost)}</td><td class="${t.profit>=0?'green':'red'}">${money(t.profit)}</td><td>${pct(t.roi)}</td><td>${c.status}</td></tr>`}).join(''):'<tr><td colspan="7" class="empty">Aucun historique.</td></tr>'}
+function renderHome(){let profit=0,cost=0;cars.forEach(c=>{const t=totals(c);profit+=t.profit;cost+=t.cost});$('sCars').textContent=cars.length;$('sProfit').textContent=money(profit);$('sROI').textContent=pct(cost?profit/cost*100:0);$('sPending').textContent=cars.filter(c=>c.status==='En cours').length;const r=cars.slice(0,3);$('recent').innerHTML=r.length?r.map(c=>{const t=totals(c);return `<div class="card"><div class="row"><span class="pill ${c.score>=80?'green':c.score>=60?'orange':'red'}">${c.score?c.score+'/100':'Véhicule'}</span><span class="muted">${c.status}</span></div><h3>${c.brand} ${c.model}</h3><p class="muted">${c.year||'—'} • ${(c.km||0).toLocaleString('fr-BE')} km</p><div class="row"><b>${money(c.buy)}</b><b class="${t.profit>=0?'green':'red'}">${money(t.profit)}</b></div></div>`}).join(''):'<div class="card empty">Tes dernières analyses apparaîtront ici.</div>'}
+function renderAll(){renderHome();renderStock();renderBusiness();renderHistory()}
+function clearAll(){if(confirm('Effacer toutes les données ?')){cars=[];save();clearAllCloud();notify('Données effacées')}}
+async function checkSession(){
+ const {data}=await sb.auth.getSession();
+ if(data.session){
+   currentUser=data.session.user;
+   await afterLogin();
+ }else{
+   $('authScreen').style.display='grid';
+   $('appRoot').style.display='none';
+ }
+}
+checkSession();
+</script>
+</body>
+</html>
