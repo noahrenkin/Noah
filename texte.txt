@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090b12">
+<title>L'Œil du Garagiste V5 PRO - Sécurisée</title>
+<script>
+// ============================================================
+// ⚠️ CONFIGURATION SÉCURISÉE - À COMPLÉTER AVANT DÉPLOIEMENT
+// ============================================================
+// 1. Crée un fichier .env à la racine de ton projet avec ces variables :
+//    VITE_SUPABASE_URL=ton_url_supabase
+//    VITE_SUPABASE_KEY=ta_clé_publique
+// 2. Ou remplace directement les valeurs ci-dessous (moins sécurisé) :
+// ============================================================
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://ton-projet.supabase.co';
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_ta_cle_publique';
+
+// Vérification de sécurité - bloque si les identifiants ne sont pas configurés
+if (SUPABASE_URL.includes('ton-projet') || SUPABASE_KEY.includes('ta_cle')) {
+  console.error('⚠️ ERREUR : Configurer SUPABASE_URL et SUPABASE_KEY dans .env');
+  alert('Configuration manquante. Voir la console pour plus de détails.');
+}
+
+// Chargement de Supabase (sera bloqué en preview canvas - à tester en local)
+const sb = window.supabase?.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Si Supabase n'est pas disponible, on utilise localStorage uniquement
+const isSupabaseAvailable = !!sb;
+console.log('Supabase disponible :', isSupabaseAvailable);
+</script>
+<style>
+:root{
+  --bg1:#170a26;--bg2:#3a1054;--bg3:#59175f;
+  --glass:rgba(255,255,255,.07);--glass2:rgba(255,255,255,.04);--glassBorder:rgba(255,255,255,.14);
+  --text:#f6eefc;--muted:#c6b3dd;
+  --pink:#ec4899;--purple:#a855f7;--blue:#7c9bff;
+  --green:#34d399;--orange:#fbbf24;--red:#fb7185;--cyan:#5eead4;
+  --radius:26px;--shadow:0 24px 70px rgba(10,0,25,.55)
+}
+*{box-sizing:border-box}
+body{margin:0;background:
+  radial-gradient(circle at 14% -8%,#ff6fb355 0,transparent 42%),
+  radial-gradient(circle at 100% 0%,#7c3aed44 0,transparent 45%),
+  linear-gradient(160deg,var(--bg1),var(--bg2) 55%,var(--bg3));
+  background-attachment:fixed;
+  color:var(--text);font:15px Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}
+
+/* ===== NOUVELLE SECTION : BANNIÈRE DE SÉCURITÉ ===== */
+.security-banner {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  display: none;
+}
+.security-banner.show {
+  display: block;
+}
+.security-banner a {
+  color: white;
+  text-decoration: underline;
+  margin-left: 8px;
+}
+
+/* ===== FIN NOUVELLE SECTION ===== */
+
+.authScreen{position:fixed;inset:0;background:
+  radial-gradient(circle at 20% -10%,#ff6fb344 0,transparent 40%),
+  linear-gradient(160deg,var(--bg1),var(--bg2) 60%,var(--bg3));z-index:100;display:grid;place-items:center;padding:24px}
+.authBox{width:100%;max-width:380px;background:linear-gradient(180deg,var(--glass),var(--glass2));backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid var(--glassBorder);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow)}
+.authBox h2{margin:0 0 6px}.authBox p{color:var(--muted);margin:0 0 22px;font-size:14px}
+.authBox .field{margin-bottom:14px}
+.authBox .btn.primary{width:100%;padding:14px;text-align:center;margin-top:6px}
+.authMsg{font-size:13px;margin-top:12px;min-height:18px}
+.authMsg.err{color:var(--red)}.authMsg.ok{color:var(--green)}
+.authLink{background:none;color:#f0abfc;font-size:13px;margin-top:14px;text-decoration:underline}
+.landingScreen{position:fixed;inset:0;z-index:200;background:
+  radial-gradient(circle at 20% -10%,#ff6fb344 0,transparent 40%),
+  radial-gradient(circle at 100% 10%,#7c3aed3d 0,transparent 45%),
+  linear-gradient(160deg,var(--bg1),var(--bg2) 55%,var(--bg3));overflow-y:auto;padding:48px 24px 80px}
+.landingWrap{max-width:520px;margin:0 auto}
+.landingHero{text-align:center;margin-bottom:48px}
+.landingHero .eye{font-size:40px;width:92px;height:92px;margin:0 auto 18px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--purple));box-shadow:0 0 0 1px rgba(255,255,255,.14),0 20px 50px #ec489955,0 0 60px #a855f755}
+.landingHero h1{font-size:32px;margin:0 0 12px;line-height:1.2;background:linear-gradient(135deg,#ffe3f3,#e9d5ff 60%,#c4b5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
+.landingHero p{color:var(--muted);font-size:16px;margin:0 auto 26px}
+.landingCta{display:inline-block;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;font-weight:700;padding:16px 32px;border-radius:16px;font-size:16px;border:0;cursor:pointer;box-shadow:0 14px 34px #a855f755}
+.landingFeatures{display:grid;gap:14px;margin-top:40px}
+.landingFeature{background:linear-gradient(180deg,var(--glass),var(--glass2));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--glassBorder);border-radius:var(--radius);padding:20px}
+.landingFeature .icon{font-size:24px;margin-bottom:6px}
+.landingFeature h3{margin:0 0 4px;font-size:16px}
+.landingFeature p{margin:0;color:var(--muted);font-size:13px}
+.sidebar{width:255px;background:linear-gradient(180deg,rgba(30,10,45,.72),rgba(30,10,45,.5));backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);border-right:1px solid var(--glassBorder);padding:22px 15px;position:fixed;inset:0 auto 0 0;z-index:20}
+.brand{display:flex;gap:12px;align-items:center;padding:8px 10px 25px}.brandIcon{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--pink),var(--purple));display:grid;place-items:center;font-size:20px;box-shadow:0 10px 30px #a855f755}.brand b{display:block}.brand small{color:var(--muted)}
+.nav button{width:100%;background:none;color:#d8c6ec;text-align:left;padding:13px 14px;border-radius:13px;margin:3px 0}.nav button:hover,.nav button.active{background:linear-gradient(135deg,rgba(236,72,153,.22),rgba(168,85,247,.22));color:white}.nav button.active{box-shadow:inset 3px 0 var(--pink)}
+.profile{position:absolute;bottom:20px;left:15px;right:15px;padding:13px;background:linear-gradient(180deg,var(--glass),var(--glass2));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--glassBorder);border-radius:16px;cursor:pointer}
+.main{margin-left:255px;width:calc(100% - 255px);padding:28px;max-width:1600px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.top h1{margin:0;font-size:28px}.top p{margin:5px 0;color:var(--muted)}.actions{display:flex;gap:8px}.iconBtn{width:42px;height:42px;border-radius:13px;background:var(--glass);border:1px solid var(--glassBorder);color:white;backdrop-filter:blur(12px)}
+.page{display:none}.page.active{display:block}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.quickCard{padding:20px;border-radius:var(--radius);min-height:150px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.14);box-shadow:var(--shadow)}.quickCard:after{content:"";position:absolute;width:130px;height:130px;border-radius:50%;right:-55px;top:-55px;background:#fff2;filter:blur(2px)}
+.q-purple{background:linear-gradient(135deg,#6b21a8,#a855f7)}.q-orange{background:linear-gradient(135deg,#9d174d,#ec4899)}.q-green{background:linear-gradient(135deg,#0f766e,#34d399)}.q-blue{background:linear-gradient(135deg,#4338ca,#7c9bff)}
+.quickCard .emoji{font-size:25px}.quickCard h3{margin:17px 0 5px}.quickCard p{margin:0;color:#f3e8ff;font-size:13px;line-height:1.5}.arrow{position:absolute;right:16px;bottom:16px;width:34px;height:34px;border-radius:50%;background:#ffffff26;display:grid;place-items:center}
+.sectionHead{display:flex;justify-content:space-between;align-items:center;margin:30px 0 14px}.sectionHead h2{margin:0;font-size:19px}.link{color:#f0abfc;background:none}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:linear-gradient(180deg,var(--glass),var(--glass2));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--glassBorder);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.statGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat{padding:18px}.stat .num{font-size:27px;font-weight:800;margin-top:8px}.muted{color:var(--muted)}.green{color:var(--green)}.red{color:var(--red)}.orange{color:var(--orange)}.purple{color:#e0c6ff}
+.vehicle{overflow:hidden;padding:0}.vehicle img{width:100%;height:150px;object-fit:cover;background:#2a1840}.vehicleBody{padding:16px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.pill{display:inline-flex;padding:5px 9px;border-radius:999px;background:#ffffff14;color:#f0e6fa;font-size:12px}.score{font-weight:800}.score.good{color:var(--green)}.score.mid{color:var(--orange)}.score.bad{color:var(--red)}
+.formGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}.field input,.field select,.field textarea{width:100%;padding:12px 13px;background:rgba(10,4,20,.55);border:1px solid var(--glassBorder);border-radius:12px;color:white;outline:none}.field textarea{min-height:90px;resize:vertical}.full{grid-column:1/-1}
+.btn{padding:12px 16px;border-radius:12px;color:white;background:var(--glass);border:1px solid var(--glassBorder);font-weight:700;backdrop-filter:blur(10px)}.btn.primary{background:linear-gradient(135deg,var(--pink),var(--purple));border:0;box-shadow:0 10px 26px #a855f755}.btn.greenBtn{background:linear-gradient(135deg,#0f766e,#34d399)}.btn.redBtn{background:linear-gradient(135deg,#9f1239,#fb7185)}.btnRow{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.result{margin-top:18px;padding:20px;border-radius:18px;background:rgba(10,4,20,.5);border:1px solid var(--glassBorder)}.decision{font-size:28px;font-weight:900}.scoreBig{font-size:52px;font-weight:900}.meter{height:9px;background:rgba(255,255,255,.1);border-radius:20px;overflow:hidden;margin:10px 0}.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--orange),var(--green))}
+.warning{padding:11px 13px;border-radius:12px;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.35);margin-top:8px;color:#fde3a7}
+.costs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}.costs .card{padding:13px}
+.table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:12px;border-bottom:1px solid var(--glassBorder)}.table th{color:var(--muted);font-size:12px}
+.empty{text-align:center;padding:35px;color:var(--muted)}
+.toast{position:fixed;right:20px;bottom:20px;background:linear-gradient(180deg,var(--glass),var(--glass2));backdrop-filter:blur(18px);border:1px solid var(--glassBorder);padding:13px 17px;border-radius:14px;box-shadow:var(--shadow);display:none;z-index:99}
+.modal{position:fixed;inset:0;background:#0c0016cc;display:none;place-items:center;z-index:50;padding:20px}.modalBox{background:linear-gradient(180deg,#1c0e2e,#170a26);border:1px solid var(--glassBorder);border-radius:var(--radius);padding:22px;max-width:750px;width:100%;max-height:95vh;overflow:auto;box-shadow:var(--shadow)}
+.accordion{background:rgba(10,4,20,.3);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.accordion-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;background:rgba(255,255,255,.03);border-radius:12px;transition:background .2s}
+.accordion-header:hover{background:rgba(255,255,255,.06)}
+.accordion-content{padding:0 14px 14px;display:none}
+.accordion-content.open{display:block}
+.checklist-item{display:flex;align-items:center;gap:10px;padding:4px 0;font-size:13px}
+.checklist-item input[type="checkbox"]{width:18px;height:18px;accent-color:var(--pink);cursor:pointer;flex-shrink:0}
+.checklist-stats{display:flex;gap:14px;flex-wrap:wrap;padding:8px 0 4px}
+.checklist-stats .stat-badge{background:rgba(255,255,255,.05);padding:4px 12px;border-radius:20px;font-size:12px}
+@media(max-width:1050px){.quick,.statGrid{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.sidebar{width:100%;height:68px;top:auto;bottom:0;border-right:0;border-top:1px solid var(--glassBorder);padding:7px;display:flex}.brand,.profile{display:none}.nav{display:flex;width:100%;justify-content:space-around}.nav button{width:auto;font-size:0;margin:0;padding:9px}.nav button:before{font-size:20px}.nav button:nth-child(1):before{content:"⌂"}.nav button:nth-child(2):before{content:"⌕"}.nav button:nth-child(3):before{content:"🚗"}.nav button:nth-child(4):before{content:"🎯"}.nav button:nth-child(5):before{content:"📊"}.nav button:nth-child(6):before{content:"◷"}.nav button:nth-child(7):before{content:"💡"}.nav button:nth-child(8):before{content:"⚙"}.main{margin:0;width:100%;padding:17px 14px 90px}.top h1{font-size:21px}.quick,.grid,.statGrid,.formGrid{grid-template-columns:1fr}.quickCard{min-height:125px}.costs{grid-template-columns:1fr}.table{font-size:12px}.tableWrap{overflow:auto}}
+</style>
+</head>
+<body>
+<div class="security-banner" id="securityBanner">
+  ⚠️ Configurer .env avant déploiement ! 
+  <a href="#" onclick="showConfigHelp()">Aide</a>
+</div>
+
+<div class="landingScreen" id="landingScreen">
+  <div class="landingWrap">
+    <div class="landingHero">
+      <div class="eye">👁️</div>
+      <h1>L'Œil du Garagiste</h1>
+      <p>Estime une voiture, calcule ton offre de négociation, et suis ton stock et ta rentabilité — que tu sois débutant ou professionnel de l'achat-revente.</p>
+      <button class="landingCta" onclick="enterApp()">Ouvrir l'application →</button>
+    </div>
+    <div class="landingFeatures">
+      <div class="landingFeature"><div class="icon">🔍</div><h3>Analyse d'annonce</h3><p>Colle une annonce et obtiens un score d'achat basé sur le prix, le kilométrage et les défauts détectés.</p></div>
+      <div class="landingFeature"><div class="icon">🎯</div><h3>Calculateur de négociation</h3><p>Choisis un véhicule de ton stock et obtiens ton prix d'offre et ton prix maximum, calculés automatiquement.</p></div>
+      <div class="landingFeature"><div class="icon">🚗</div><h3>Gestion de stock</h3><p>Garde une photo de profil et des photos d'observation pour chaque véhicule, avec ton historique complet.</p></div>
+      <div class="landingFeature"><div class="icon">📊</div><h3>Suivi de rentabilité</h3><p>Chiffre d'affaires, coûts, bénéfice net et ROI moyen sur l'ensemble de tes opérations.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="authScreen" id="authScreen">
+  <div class="authBox">
+    <div id="authStep1">
+      <h2>👁️ L'Œil du Garagiste</h2>
+      <p>Entre ton email et un code à 6 chiffres. La première fois, ça crée ton profil. Les fois suivantes, ça te reconnecte.</p>
+      <div class="field"><label>EMAIL</label><input id="authEmail" type="email" placeholder="toi@exemple.com"></div>
+      <div class="field"><label>CODE (6 chiffres)</label><input id="authPin" type="password" inputmode="numeric" maxlength="6" placeholder="••••••"></div>
+      <button class="btn primary" onclick="loginOrSignup()">Continuer</button>
+      <div id="authMsg1" class="authMsg"></div>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="appRoot" style="display:none">
+<aside class="sidebar">
+  <div class="brand"><div class="brandIcon">👁️</div><div><b>L'ŒIL DU GARAGISTE</b><small>V5 PRO</small></div></div>
+  <nav class="nav">
+    <button class="active" data-page="home">Accueil</button><button data-page="analyze">Analyser</button>
+    <button data-page="stock">Mon Stock</button><button data-page="negotiation">Négociation</button>
+    <button data-page="business">Business</button><button data-page="history">Historique</button>
+    <button data-page="suggestions">💡 Suggestions</button>
+    <button data-page="settings">Paramètres</button>
+  </nav>
+  <div class="profile" id="profileZone" onclick="toggleAccountMenu()">
+   <b>👤 <span id="profileEmail">Mon compte</span></b><br><small class="muted">Appuyer pour gérer</small>
+   <div id="accountMenu" style="display:none;position:absolute;bottom:64px;left:14px;right:14px;background:var(--glass2);border:1px solid var(--glassBorder);border-radius:14px;padding:8px;z-index:50">
+    <button class="btn" style="width:100%;margin-bottom:6px" onclick="event.stopPropagation();logout()">🚪 Se déconnecter</button>
+    <button class="btn redBtn" style="width:100%" onclick="event.stopPropagation();deleteAccount()">🗑️ Supprimer mon compte</button>
+   </div>
+  </div>
+</aside>
+
+<main class="main">
+<header class="top"><div><h1 id="pageTitle">Bienvenue 👋</h1><p id="pageSub">Prêt à dénicher la prochaine pépite ?</p></div><div class="actions"><button class="iconBtn" onclick="notify('Notifications activées 🔔')">🔔</button><button class="iconBtn" onclick="toggleTheme()">◐</button></div></header>
+
+<section id="home" class="page active">
+  <div class="quick">
+    <div class="quickCard q-purple" onclick="go('analyze')"><span class="emoji">🔍</span><h3>ANALYSER</h3><p>Une annonce<br>Analyse complète en quelques secondes</p><span class="arrow">→</span></div>
+    <div class="quickCard q-orange" onclick="go('stock')"><span class="emoji">🚗</span><h3>MON STOCK</h3><p>Mes véhicules<br>Gère ton stock et tes performances</p><span class="arrow">→</span></div>
+    <div class="quickCard q-green" onclick="go('business')"><span class="emoji">📈</span><h3>BUSINESS</h3><p>Mes bénéfices<br>Analyse tes profits et ton évolution</p><span class="arrow">→</span></div>
+    <div class="quickCard q-blue" onclick="go('negotiation')"><span class="emoji">🤝</span><h3>NÉGOCIATION</h3><p>Calculer mon offre<br>Obtiens le meilleur prix</p><span class="arrow">→</span></div>
+  </div>
+  <div class="sectionHead"><h2>Vue d'ensemble</h2></div>
+  <div class="statGrid">
+    <div class="card stat"><span class="muted">Véhicules</span><div class="num" id="sCars">0</div></div>
+    <div class="card stat"><span class="muted">Bénéfices</span><div class="num green" id="sProfit">0 €</div></div>
+    <div class="card stat"><span class="muted">ROI moyen</span><div class="num purple" id="sROI">0%</div></div>
+    <div class="card stat"><span class="muted">En cours</span><div class="num orange" id="sPending">0</div></div>
+  </div>
+  <div class="sectionHead"><h2>Dernières analyses</h2><button class="link" onclick="go('history')">Voir tout →</button></div>
+  <div id="recent" class="grid"></div>
+</section>
+
+<section id="analyze" class="page">
+  <div class="card">
+    <div class="sectionHead"><h2>🔍 Scanner une annonce</h2><span class="pill">Analyse V5</span></div>
+    <div class="field full" style="margin-bottom:14px"><label>COLLE L'ANNONCE (optionnel)</label><textarea id="adText" placeholder="Colle ici le texte de l'annonce... L'application tentera d'identifier automatiquement les informations."></textarea></div>
+    <div class="formGrid">
+      <div class="field"><label>MARQUE</label><input id="aBrand" placeholder="Audi"></div><div class="field"><label>MODÈLE</label><input id="aModel" placeholder="A1 Sportback"></div>
+      <div class="field"><label>ANNÉE</label><input id="aYear" type="number" placeholder="2016"></div><div class="field"><label>KILOMÉTRAGE</label><input id="aKm" type="number" placeholder="125000"></div>
+      <div class="field"><label>CARBURANT</label><select id="aFuel"><option>Essence</option><option>Diesel</option><option>Hybride</option><option>Électrique</option></select></div>
+      <div class="field"><label>TRANSMISSION</label><select id="aGear"><option>Manuelle</option><option>Automatique</option></select></div>
+      <div class="field"><label>PRIX DEMANDÉ (€)</label><input id="aPrice" type="number" placeholder="8900"></div><div class="field"><label>NB PROPRIÉTAIRES</label><input id="aOwners" type="number" placeholder="2"></div>
+      <div class="field"><label>ÉTAT GÉNÉRAL</label><select id="aState"><option>Excellent</option><option>Très bon</option><option>Bon</option><option>Moyen</option><option>Mauvais</option></select></div>
+      <div class="field"><label>HISTORIQUE ENTRETIEN</label><select id="aHistory"><option>Complet</option><option>Partiel</option><option>Aucun</option></select></div>
+      <div class="field"><label>CONTRÔLE TECHNIQUE</label><select id="aCt"><option>Valide &lt;6 mois</option><option>Valide &gt;6 mois</option><option>Non disponible</option></select></div>
+      <div class="field"><label>URGENCE VENTE</label><select id="aUrgent"><option>Non</option><option>Oui</option></select></div>
+      <div class="field full"><label>DÉFAUTS MENTIONNÉS</label><textarea id="aDefects" placeholder="Ex.: pneus à changer, voyant moteur, rayure porte..."></textarea></div>
+    </div>
+    <div class="btnRow"><button class="btn" onclick="parseAd()">⚡ Scanner le texte</button><button class="btn primary" onclick="analyze()">🧠 Analyser</button><button class="btn" onclick="resetAnalyze()">Réinitialiser</button></div>
+    <div id="analysisResult"></div>
+  </div>
+</section>
+
+<section id="stock" class="page">
+ <div class="sectionHead"><h2>🚗 Mon Stock</h2><button class="btn primary" onclick="openVehicle()">+ Ajouter un véhicule</button></div>
+ <div id="stockList" class="grid"></div>
+</section>
+
+<section id="negotiation" class="page">
+ <div class="card"><div class="sectionHead"><h2>🎯 Calculateur de négociation</h2></div>
+  <div class="field full" style="margin-bottom:14px">
+   <label>CHOISIR UN VÉHICULE DE TON STOCK (remplit tout automatiquement)</label>
+   <select id="nCarPicker" onchange="fillNegotiationFromCar(this.value)">
+    <option value="">— Choisir un véhicule —</option>
+   </select>
+  </div>
+  <div class="formGrid">
+   <div class="field"><label>PRIX DEMANDÉ (€)</label><input id="nAsk" type="number" placeholder="9500"></div>
+   <div class="field"><label>MARQUE</label><input id="nBrand" placeholder="Audi"></div>
+   <div class="field"><label>MODÈLE</label><input id="nModel" placeholder="A1"></div>
+   <div class="field"><label>ANNÉE</label><input id="nYear" type="number" placeholder="2016"></div>
+   <div class="field"><label>KILOMÉTRAGE</label><input id="nKm" type="number" placeholder="125000"></div>
+   <div class="field"><label>RÉPARATIONS ESTIMÉES (€)</label><input id="nRep" type="number" placeholder="800"></div>
+   <div class="field"><label>AUTRES FRAIS (€)</label><input id="nOther" type="number" placeholder="400"></div>
+   <div class="field"><label>MARGE MINIMUM SOUHAITÉE (€)</label><input id="nMargin" type="number" value="1500"></div>
+   <div class="field"><label>ÉTAT GÉNÉRAL</label><select id="nState"><option>Excellent</option><option>Très bon</option><option selected>Bon</option><option>Moyen</option><option>Mauvais</option></select></div>
+  </div>
+  <div class="btnRow"><button class="btn primary" onclick="negotiate()">🎯 Calculer mon offre</button></div><div id="negResult"></div>
+ </div>
+</section>
+
+<section id="business" class="page">
+ <div class="sectionHead"><h2>📊 Business</h2></div>
+ <div class="statGrid"><div class="card stat"><span class="muted">Chiffre ventes</span><div class="num" id="bSales">0 €</div></div><div class="card stat"><span class="muted">Coût total</span><div class="num" id="bCost">0 €</div></div><div class="card stat"><span class="muted">Bénéfice net</span><div class="num green" id="bProfit">0 €</div></div><div class="card stat"><span class="muted">ROI moyen</span><div class="num purple" id="bROI">0%</div></div></div>
+ <div class="card" style="margin-top:14px"><h3>Performance</h3><div id="businessRows"></div></div>
+</section>
+
+<section id="history" class="page">
+ <div class="sectionHead"><h2>📜 Historique</h2></div>
+ <div class="card tableWrap"><table class="table"><thead><tr><th>Véhicule</th><th>Achat</th><th>Vente</th><th>Coût</th><th>Bénéfice</th><th>ROI</th><th>Statut</th></tr></thead><tbody id="historyBody"></tbody></table></div>
+</section>
+
+<section id="suggestions" class="page">
+ <div class="card">
+  <div class="sectionHead"><h2>💡 Suggestions</h2></div>
+  <p class="muted">Propose une idée pour améliorer L'Œil du Garagiste. Tout le monde peut voir et voter pour les idées.</p>
+  <div class="field full"><textarea id="sugText" placeholder="Ex : ajouter un export PDF des fiches véhicule..." rows="3"></textarea></div>
+  <div class="btnRow"><button class="btn primary" onclick="postSuggestion()">Envoyer ma suggestion</button></div>
+ </div>
+ <div id="suggestionsList" style="margin-top:16px"></div>
+</section>
+
+<section id="settings" class="page">
+ <div class="card"><h2>⚙️ Paramètres</h2>
+  <p class="muted">Tes données sont sauvegardées en ligne, liées à ton email : <b id="settingsEmail"></b></p>
+  <p class="muted" style="margin-top:10px;font-size:13px;">
+    <b>🔒 Sécurité :</b> Les identifiants Supabase sont maintenant protégés via variables d'environnement.
+  </p>
+  <div class="btnRow"><button class="btn" onclick="logout()">🚪 Se déconnecter</button><button class="btn redBtn" onclick="clearAll()">🗑️ Effacer toutes les données</button></div>
+ </div>
+</section>
+</main>
+</div>
+
+<div class="modal" id="modal"><div class="modalBox"><div class="sectionHead"><h2>Ajouter / modifier</h2><button class="iconBtn" onclick="closeModal()">✕</button></div><div id="vehicleForm"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================
+     ⚠️ ATTENTION : Pour que Supabase fonctionne,
+     1. Ajoute ce script dans ton <head> en production :
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+     2. Ou installe via npm : npm install @supabase/supabase-js
+     ============================================================ -->
+
+<script>
+// ============================================================
+// 📋 CONFIGURATION SÉCURISÉE
+// ============================================================
+
+// Remplace ces valeurs par tes vraies variables d'environnement
+// ou configure un fichier .env à la racine de ton projet
+const CONFIG = {
+  SUPABASE_URL: import.meta.env?.VITE_SUPABASE_URL || 'https://ton-projet.supabase.co',
+  SUPABASE_KEY: import.meta.env?.VITE_SUPABASE_KEY || 'sb_publishable_ta_cle_publique',
+  // Clé admin pour les suggestions (optionnel)
+  ADMIN_EMAIL: 'noahrenkin.pro@gmail.com'
+};
+
+// Vérification de sécurité
+if (CONFIG.SUPABASE_URL.includes('ton-projet') || CONFIG.SUPABASE_KEY.includes('ta_cle')) {
+  console.error('⚠️ ERREUR DE CONFIGURATION :');
+  console.error('1. Crée un fichier .env avec :');
+  console.error('   VITE_SUPABASE_URL=ton_url_supabase');
+  console.error('   VITE_SUPABASE_KEY=ta_clé_publique');
+  console.error('2. Ou remplace directement les valeurs ci-dessus');
+  console.error('3. Redémarre ton serveur de développement');
+  
+  // Affiche la bannière de sécurité
+  document.getElementById('securityBanner')?.classList.add('show');
+}
+
+// Initialisation de Supabase (si disponible)
+let sb = null;
+if (typeof window.supabase !== 'undefined') {
+  sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+} else {
+  console.warn('Supabase JS non chargé. Utilisation du mode localStorage uniquement.');
+}
+
+// ============================================================
+// ⚠️ FONCTION D'AIDE À LA CONFIGURATION
+// ============================================================
+function showConfigHelp() {
+  alert(`📝 INSTRUCTIONS DE CONFIGURATION SÉCURISÉE
+
+1. CRÉER UN FICHIER .env
+   À la racine de ton projet, crée un fichier nommé .env avec :
+   
+   VITE_SUPABASE_URL=https://ton-projet.supabase.co
+   VITE_SUPABASE_KEY=sb_publishable_ta_clé_publique
+   
+2. CONFIGURER SUPABASE (IMPORTANT !)
+   Dans ton projet Supabase :
+   → Va dans Settings → API
+   → Active Row Level Security (RLS) sur toutes les tables
+   → Crée des politiques de sécurité
+   
+3. POLITIQUES DE SÉCURITÉ RECOMMANDÉES
+   Pour la table 'cars' :
+   - SELECT: auth.uid() = user_id
+   - INSERT: auth.uid() = user_id
+   - UPDATE: auth.uid() = user_id
+   - DELETE: auth.uid() = user_id
+   
+   Pour la table 'suggestions' :
+   - SELECT: true (tout le monde peut voir)
+   - INSERT: true (tout le monde peut proposer)
+   - UPDATE: auth.uid() = user_id (seul l'auteur peut modifier)
+   
+4. REDÉMARRER TON SERVEUR
+   Après avoir créé le .env, redémarre ton serveur de développement.
+   
+5. POUR LA PRODUCTION
+   - Utilise un framework (Vite, Next.js, etc.) qui supporte les variables d'environnement
+   - Ne jamais commiter le fichier .env sur GitHub !
+   - Ajoute .env à ton .gitignore
+   
+✅ Une fois configuré, cette bannière disparaîtra.`);
+}
+
+// ============================================================
+// 📊 DONNÉES ET CONSTANTES (inchangées)
+// ============================================================
+const KEY='oeil_garagiste_v5';
+let cars=JSON.parse(localStorage.getItem(KEY)||'[]');
+let currentUser=null;
+const $=id=>document.getElementById(id);
+const money=n=>(Number(n)||0).toLocaleString('fr-BE',{maximumFractionDigits:0})+' €';
+const pct=n=>(Number(n)||0).toFixed(1)+'%';
+
+let tempProfilePhoto='';
+let tempObsPhotos=[];
+let tempRepairs=[];
+let tempChecklist=[];
+
+// Checklist complète (inchangée)
+const CHECKLIST_ITEMS = [
+  { id: 'm1', cat: '🚀 Moteur & Transmission', label: 'Démarrage à froid (sans difficulté)' },
+  { id: 'm2', cat: '🚀 Moteur & Transmission', label: 'Voyant moteur allumé ? (NON)' },
+  { id: 'm3', cat: '🚀 Moteur & Transmission', label: 'Bruits moteur anormaux (cliquetis, sifflement)' },
+  { id: 'm4', cat: '🚀 Moteur & Transmission', label: 'Fumée échappement normale (blanche/bleue/noire)' },
+  { id: 'm5', cat: '🚀 Moteur & Transmission', label: 'Niveau d\'huile bon (propre)' },
+  { id: 'm6', cat: '🚀 Moteur & Transmission', label: 'Pas de fuites d\'huile / liquide sous la voiture' },
+  { id: 'm7', cat: '🚀 Moteur & Transmission', label: 'Courroie de distribution en bon état' },
+  { id: 'm8', cat: '🚀 Moteur & Transmission', label: 'Boîte de vitesses (passage doux)' },
+  { id: 'm9', cat: '🚀 Moteur & Transmission', label: 'Embrayage (pas de patinage, pas trop dur)' },
+  { id: 'm10', cat: '🚀 Moteur & Transmission', label: 'Turbo / compresseur (pas de bruit, bonne puissance)' },
+  { id: 'p1', cat: '🛞 Pneus & Freins', label: 'Usure des pneus homogène (avant/arrière)' },
+  { id: 'p2', cat: '🛞 Pneus & Freins', label: 'Pneus de marques identiques (ou adaptées)' },
+  { id: 'p3', cat: '🛞 Pneus & Freins', label: 'Pneus adaptés à la saison (hiver/été)' },
+  { id: 'p4', cat: '🛞 Pneus & Freins', label: 'Disques de freins en bon état (pas de rayures)' },
+  { id: 'p5', cat: '🛞 Pneus & Freins', label: 'Plaquettes de freins épaisses' },
+  { id: 'p6', cat: '🛞 Pneus & Freins', label: 'Frein à main efficace' },
+  { id: 'c1', cat: '🚗 Carrosserie & Peinture', label: 'Pas de rayures / impacts visibles' },
+  { id: 'c2', cat: '🚗 Carrosserie & Peinture', label: 'Pas de rouille / corrosion' },
+  { id: 'c3', cat: '🚗 Carrosserie & Peinture', label: 'Teinte uniforme entre panneaux (pas de repeint)' },
+  { id: 'c4', cat: '🚗 Carrosserie & Peinture', label: 'Phares en bon état (pas opaques / cassés)' },
+  { id: 'c5', cat: '🚗 Carrosserie & Peinture', label: 'Feux arrière en bon état' },
+  { id: 'c6', cat: '🚗 Carrosserie & Peinture', label: 'Rétroviseurs en bon état' },
+  { id: 'c7', cat: '🚗 Carrosserie & Peinture', label: 'Joints de portes / coffre en bon état' },
+  { id: 'c8', cat: '🚗 Carrosserie & Peinture', label: 'Ouvrants bien alignés (portes, coffre, capot)' },
+  { id: 'c9', cat: '🚗 Carrosserie & Peinture', label: 'Toit ouvrant fonctionne' },
+  { id: 'c10', cat: '🚗 Carrosserie & Peinture', label: 'Pare-brise sans impact / fissure' },
+  { id: 'i1', cat: '🪑 Intérieur & Confort', label: 'Sièges en bon état (pas d\'usure/déchirures)' },
+  { id: 'i2', cat: '🪑 Intérieur & Confort', label: 'Volant en bon état (pas d\'usure excessive)' },
+  { id: 'i3', cat: '🪑 Intérieur & Confort', label: 'Tableau de bord en bon état' },
+  { id: 'i4', cat: '🪑 Intérieur & Confort', label: 'Climatisation / Air conditionné fonctionne' },
+  { id: 'i5', cat: '🪑 Intérieur & Confort', label: 'Chauffage fonctionne' },
+  { id: 'i6', cat: '🪑 Intérieur & Confort', label: 'Autoradio / Écran tactile fonctionne' },
+  { id: 'i7', cat: '🪑 Intérieur & Confort', label: 'Bluetooth / Connectivité fonctionne' },
+  { id: 'i8', cat: '🪑 Intérieur & Confort', label: 'GPS fonctionne' },
+  { id: 'i9', cat: '🪑 Intérieur & Confort', label: 'Phares intérieurs fonctionnent' },
+  { id: 'i10', cat: '🪑 Intérieur & Confort', label: 'Pas d\'odeurs (moisissure, tabac, brûlé)' },
+  { id: 'e1', cat: '🔧 Équipements & Options', label: 'Phares (plein phare, code, clignotants) OK' },
+  { id: 'e2', cat: '🔧 Équipements & Options', label: 'Essuie-glaces (avant/arrière) OK' },
+  { id: 'e3', cat: '🔧 Équipements & Options', label: 'Lave-phares / Lave-glace OK' },
+  { id: 'e4', cat: '🔧 Équipements & Options', label: 'Vitres électriques (toutes) OK' },
+  { id: 'e5', cat: '🔧 Équipements & Options', label: 'Rétroviseurs électriques OK' },
+  { id: 'e6', cat: '🔧 Équipements & Options', label: 'Sièges chauffants OK' },
+  { id: 'e7', cat: '🔧 Équipements & Options', label: 'Régulateur / Limiteur de vitesse OK' },
+  { id: 'e8', cat: '🔧 Équipements & Options', label: 'Aide au stationnement / Caméra OK' },
+  { id: 'd1', cat: '📄 Documents & Historique', label: 'Carte grise présente et en règle' },
+  { id: 'd2', cat: '📄 Documents & Historique', label: 'Carnet d\'entretien / Historique complet' },
+  { id: 'd3', cat: '📄 Documents & Historique', label: 'Factures récentes (pièces, réparations)' },
+  { id: 'd4', cat: '📄 Documents & Historique', label: 'Contrôle technique valide' },
+  { id: 'd5', cat: '📄 Documents & Historique', label: 'Détails du contrôle technique (défauts)' },
+  { id: 'd6', cat: '📄 Documents & Historique', label: 'Coût de l\'assurance estimé' },
+  { id: 'el1', cat: '🔋 Électrique', label: 'Batterie en bon état (date récente)' },
+  { id: 'el2', cat: '🔋 Électrique', label: 'Alternateur charge correctement' },
+  { id: 'el3', cat: '🔋 Électrique', label: 'Tous les voyants du tableau OK' },
+  { id: 'el4', cat: '🔋 Électrique', label: 'Systèmes d\'alerte (ABS, ESP, etc.) OK' },
+  { id: 'el5', cat: '🔋 Électrique', label: 'Prise OBD fonctionnelle' },
+  { id: 'r1', cat: '🛠️ Test de route', label: 'Direction précise (pas de jeu)' },
+  { id: 'r2', cat: '🛠️ Test de route', label: 'Suspensions confortables (pas de bruits)' },
+  { id: 'r3', cat: '🛠️ Test de route', label: 'Accélération bonne (reprise, puissance)' },
+  { id: 'r4', cat: '🛠️ Test de route', label: 'Freinage puissant et stable' },
+  { id: 'r5', cat: '🛠️ Test de route', label: 'Tenue de route (virage, lignes droites)' }
+];
+
+// Base de prix (inchangée)
+const prixReference = {
+  'Audi': {'2010':5000,'2011':5500,'2012':6000,'2013':6500,'2014':7000,'2015':8000,'2016':9000,'2017':10000,'2018':11500,'2019':13000,'2020':15000,'2021':17000,'2022':19000,'2023':21000},
+  'BMW': {'2010':4800,'2011':5200,'2012':5800,'2013':6200,'2014':6800,'2015':7800,'2016':8800,'2017':9800,'2018':11000,'2019':12500,'2020':14500,'2021':16500,'2022':18500,'2023':20500},
+  'Mercedes': {'2010':5500,'2011':6000,'2012':6500,'2013':7000,'2014':7500,'2015':8500,'2016':9500,'2017':10500,'2018':12000,'2019':13500,'2020':15500,'2021':17500,'2022':19500,'2023':22000},
+  'Peugeot': {'2010':3500,'2011':3800,'2012':4000,'2013':4500,'2014':4800,'2015':5500,'2016':6000,'2017':6500,'2018':7500,'2019':8500,'2020':9500,'2021':10500,'2022':11500,'2023':12500},
+  'Renault': {'2010':3200,'2011':3500,'2012':3800,'2013':4200,'2014':4500,'2015':5200,'2016':5800,'2017':6200,'2018':7000,'2019':8000,'2020':9000,'2021':10000,'2022':11000,'2023':12000},
+  'Volkswagen': {'2010':4000,'2011':4300,'2012':4600,'2013':5000,'2014':5500,'2015':6200,'2016':6800,'2017':7500,'2018':8500,'2019':9500,'2020':10500,'2021':11500,'2022':12500,'2023':13500},
+  'Toyota': {'2010':3800,'2011':4000,'2012':4300,'2013':4600,'2014':5000,'2015':5800,'2016':6500,'2017':7000,'2018':7800,'2019':8800,'2020':9800,'2021':10800,'2022':11800,'2023':12800},
+  'Ford': {'2010':3500,'2011':3800,'2012':4000,'2013':4400,'2014':4800,'2015':5500,'2016':6000,'2017':6500,'2018':7200,'2019':8200,'2020':9200,'2021':10200,'2022':11200,'2023':12200},
+  'Opel': {'2010':3000,'2011':3300,'2012':3500,'2013':3800,'2014':4200,'2015':4800,'2016':5200,'2017':5800,'2018':6500,'2019':7500,'2020':8500,'2021':9500,'2022':10500,'2023':11500},
+  'Citroën': {'2010':3200,'2011':3500,'2012':3800,'2013':4000,'2014':4400,'2015':5000,'2016':5500,'2017':6000,'2018':6800,'2019':7800,'2020':8800,'2021':9800,'2022':10800,'2023':11800},
+  'Dacia': {'2010':2500,'2011':2700,'2012':2900,'2013':3100,'2014':3400,'2015':3800,'2016':4200,'2017':4600,'2018':5200,'2019':5800,'2020':6500,'2021':7200,'2022':8000,'2023':8800},
+  'Hyundai': {'2010':3200,'2011':3500,'2012':3800,'2013':4000,'2014':4400,'2015':5000,'2016':5500,'2017':6000,'2018':6800,'2019':7800,'2020':8800,'2021':9800,'2022':10800,'2023':11800},
+  'Kia': {'2010':3000,'2011':3300,'2012':3600,'2013':3900,'2014':4200,'2015':4800,'2016':5300,'2017':5800,'2018':6500,'2019':7500,'2020':8500,'2021':9500,'2022':10500,'2023':11500},
+  'Volvo': {'2010':4500,'2011':4800,'2012':5200,'2013':5500,'2014':6000,'2015':6800,'2016':7500,'2017':8200,'2018':9200,'2019':10500,'2020':12000,'2021':13500,'2022':15000,'2023':16500},
+  'Seat': {'2010':3200,'2011':3500,'2012':3800,'2013':4200,'2014':4500,'2015':5200,'2016':5800,'2017':6500,'2018':7200,'2019':8200,'2020':9200,'2021':10200,'2022':11200,'2023':12200},
+  'Skoda': {'2010':3400,'2011':3700,'2012':4000,'2013':4400,'2014':4800,'2015':5500,'2016':6000,'2017':6800,'2018':7500,'2019':8500,'2020':9500,'2021':10500,'2022':11500,'2023':12500},
+  'Nissan': {'2010':3400,'2011':3700,'2012':4000,'2013':4300,'2014':4700,'2015':5400,'2016':6000,'2017':6600,'2018':7400,'2019':8400,'2020':9400,'2021':10400,'2022':11400,'2023':12400},
+  'Honda': {'2010':3600,'2011':3900,'2012':4200,'2013':4600,'2014':5000,'2015':5800,'2016':6500,'2017':7200,'2018':8000,'2019':9000,'2020':10000,'2021':11000,'2022':12000,'2023':13000},
+  'Mazda': {'2010':3400,'2011':3700,'2012':4000,'2013':4300,'2014':4700,'2015':5400,'2016':6000,'2017':6600,'2018':7400,'2019':8400,'2020':9400,'2021':10400,'2022':11400,'2023':12400},
+  'Mini': {'2010':4500,'2011':4800,'2012':5200,'2013':5500,'2014':6000,'2015':6800,'2016':7500,'2017':8200,'2018':9200,'2019':10500,'2020':12000,'2021':13500,'2022':15000,'2023':16500},
+  'Fiat': {'2010':2800,'2011':3000,'2012':3200,'2013':3500,'2014':3800,'2015':4200,'2016':4600,'2017':5000,'2018':5600,'2019':6200,'2020':7000,'2021':7800,'2022':8600,'2023':9400}
+};
+
+// ============================================================
+// 🔍 FONCTIONS CHECKLIST (inchangées)
+// ============================================================
+function renderChecklist(checkedIds) {
+  const container = document.getElementById('vChecklistContainer');
+  if (!container) return;
+  
+  const categories = {};
+  CHECKLIST_ITEMS.forEach(item => {
+    if (!categories[item.cat]) categories[item.cat] = [];
+    categories[item.cat].push(item);
+  });
+  
+  let total = CHECKLIST_ITEMS.length;
+  let checked = checkedIds ? checkedIds.filter(id => id).length : 0;
+  
+  let html = `
+    <div class="checklist-stats">
+      <span class="stat-badge" style="color:var(--green);">✅ ${checked}/${total} points vérifiés</span>
+      <span class="stat-badge" style="color:${checked/total >= 0.8 ? 'var(--green)' : checked/total >= 0.5 ? 'var(--orange)' : 'var(--red)'};">
+        ${checked/total >= 0.8 ? '🟢 Bon état' : checked/total >= 0.5 ? '🟠 Moyen' : '🔴 À surveiller'}
+      </span>
+      <span class="stat-badge" style="color:var(--muted);">${Math.round(checked/total*100)}%</span>
+    </div>
+  `;
+  
+  html += `<div class="meter" style="margin:4px 0 12px;"><i style="width:${checked/total*100}%"></i></div>`;
+  
+  for (const [cat, items] of Object.entries(categories)) {
+    const checkedInCat = items.filter(item => checkedIds && checkedIds.includes(item.id)).length;
+    html += `
+      <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <span>${cat} (${checkedInCat}/${items.length})</span>
+          <span style="font-size:12px;color:var(--muted);">▼</span>
+        </div>
+        <div class="accordion-content open">
+    `;
+    items.forEach(item => {
+      const isChecked = checkedIds && checkedIds.includes(item.id);
+      html += `
+        <div class="checklist-item">
+          <input type="checkbox" id="chk_${item.id}" ${isChecked ? 'checked' : ''} onchange="onChecklistChange()">
+          <label for="chk_${item.id}" style="cursor:pointer;font-size:13px;">${item.label}</label>
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+  }
+  
+  container.innerHTML = html;
+}
+
+function toggleAccordion(header) {
+  const content = header.nextElementSibling;
+  content.classList.toggle('open');
+  const arrow = header.querySelector('span:last-child');
+  if (arrow) arrow.textContent = content.classList.contains('open') ? '▼' : '▶';
+}
+
+function onChecklistChange() {
+  const checked = [];
+  CHECKLIST_ITEMS.forEach(item => {
+    const chk = document.getElementById(`chk_${item.id}`);
+    if (chk && chk.checked) checked.push(item.id);
+  });
+  tempChecklist = checked;
+  renderChecklist(checked);
+}
+
+function getChecklistState() {
+  const checked = [];
+  CHECKLIST_ITEMS.forEach(item => {
+    const chk = document.getElementById(`chk_${item.id}`);
+    if (chk && chk.checked) checked.push(item.id);
+  });
+  return checked;
+}
+
+// ============================================================
+// 🔍 FONCTION POUR ESTIMER LE PRIX DE MARCHÉ (inchangée)
+// ============================================================
+function estimerPrixMarche(brand, year, km) {
+  const marqueData = prixReference[brand];
+  if (!marqueData) return null;
+  const annees = Object.keys(marqueData).map(Number).sort((a,b) => a-b);
+  let anneeProche = annees[0], diffMin = Math.abs(Number(year) - anneeProche);
+  for (let a of annees) {
+    const diff = Math.abs(Number(year) - a);
+    if (diff < diffMin) { diffMin = diff; anneeProche = a; }
+  }
+  let prixBase = marqueData[anneeProche] || 0;
+  const ecartAnnee = Number(year) - anneeProche;
+  if (ecartAnnee > 0) prixBase += ecartAnnee * 500;
+  else if (ecartAnnee < 0) prixBase += ecartAnnee * 500;
+  const kmBase = 100000, kmEcart = km - kmBase;
+  const ajustementKm = Math.round(kmEcart * 0.02);
+  prixBase = Math.max(prixBase + ajustementKm, 500);
+  return Math.round(prixBase);
+}
+
+// ============================================================
+// 🎯 CALCULATEUR DE NÉGOCIATION (inchangé)
+// ============================================================
+function negotiate() {
+  const ask = parseFloat($('nAsk').value) || 0;
+  const brand = $('nBrand').value.trim();
+  const model = $('nModel').value.trim();
+  const year = parseInt($('nYear').value) || 0;
+  const km = parseInt($('nKm').value) || 0;
+  const rep = parseFloat($('nRep').value) || 0;
+  const other = parseFloat($('nOther').value) || 0;
+  const margin = parseFloat($('nMargin').value) || 1500;
+  const state = $('nState').value;
+  
+  const prixMarche = estimerPrixMarche(brand, year, km);
+  let prixBase = prixMarche || ask;
+  let coeffEtat = 1;
+  switch(state) {
+    case 'Excellent': coeffEtat = 1.10; break;
+    case 'Très bon': coeffEtat = 1.05; break;
+    case 'Bon': coeffEtat = 1.00; break;
+    case 'Moyen': coeffEtat = 0.90; break;
+    case 'Mauvais': coeffEtat = 0.80; break;
+  }
+  prixBase = Math.round(prixBase * coeffEtat);
+  const prixApresRep = Math.max(0, ask - (rep * 0.8) - (other * 0.9));
+  const margeSecurite = Math.min(margin * 0.2, 500);
+  const offreDepart = Math.max(0, Math.round(prixApresRep * 0.82) - margin + margeSecurite);
+  const offreMax = Math.max(0, Math.round(prixApresRep * 0.92) - margin + (margeSecurite * 0.5));
+  const coutTotal = offreDepart + rep + other;
+  const beneficeDepart = prixBase - coutTotal;
+  const coutTotalMax = offreMax + rep + other;
+  const beneficeMax = prixBase - coutTotalMax;
+  
+  let arguments = [];
+  if (ask > prixBase * 1.15) {
+    arguments.push('💰 Le prix demandé est 15% au-dessus du marché, bonne marge de négociation.');
+  } else if (ask > prixBase * 1.05) {
+    arguments.push('💰 Le prix est légèrement au-dessus du marché, marge de négociation possible.');
+  } else if (ask <= prixBase * 0.95) {
+    arguments.push('🎯 Le prix demandé est intéressant par rapport au marché, offre à saisir !');
+  }
+  if (rep > 0) arguments.push('🔧 Des réparations sont nécessaires, tu peux justifier une baisse de prix.');
+  if (state === 'Mauvais' || state === 'Moyen') {
+    arguments.push('⚠️ L\'état général n\'est pas optimal, argument de poids pour négocier.');
+  }
+  if (arguments.length === 0) {
+    arguments.push('💪 Le prix est correct, mais tu peux toujours tenter une négociation pour optimiser ta marge.');
+  }
+  
+  let recommendation = '', recClass = '';
+  if (offreDepart > 0 && beneficeDepart > 0) {
+    recommendation = '✅ Offre réaliste avec une bonne marge. Négocie en partant de cette base.';
+    recClass = 'green';
+  } else if (offreDepart > 0 && beneficeDepart <= 0) {
+    recommendation = '⚠️ Offre juste, vérifie les coûts et essaie d\'augmenter le prix de revente estimé.';
+    recClass = 'orange';
+  } else {
+    recommendation = '❌ Le prix demandé est trop élevé. Passe ton chemin ou négocie très fortement.';
+    recClass = 'red';
+  }
+  
+  $('negResult').innerHTML = `
+  <div class="result">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div>
+        <div class="muted">PRIX DE MARCHÉ ESTIMÉ</div>
+        <div class="scoreBig purple">${money(prixBase)}</div>
+        <span class="muted" style="font-size:13px;">Basé sur ${brand} ${year} (${km.toLocaleString('fr-BE')} km)</span>
+      </div>
+      <div>
+        <div class="muted">PRIX DEMANDÉ</div>
+        <div class="scoreBig ${ask > prixBase * 1.05 ? 'red' : ask < prixBase * 0.95 ? 'green' : 'orange'}">${money(ask)}</div>
+        <span class="muted" style="font-size:13px;">${ask > prixBase * 1.05 ? '⬆️ Au-dessus du marché' : ask < prixBase * 0.95 ? '⬇️ Sous le marché' : '📊 Dans la moyenne'}</span>
+      </div>
+    </div>
+    
+    <div style="border-top:1px solid var(--glassBorder);padding-top:14px;margin-top:6px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div style="background:rgba(10,4,20,.4);padding:12px;border-radius:12px;">
+          <div class="muted" style="font-size:13px;">💡 OFFRE DE DÉPART</div>
+          <div class="scoreBig" style="font-size:34px;color:var(--pink);">${money(offreDepart)}</div>
+          <div class="muted" style="font-size:12px;">Bénéfice estimé : <span class="${beneficeDepart >= 0 ? 'green' : 'red'}">${money(beneficeDepart)}</span></div>
+        </div>
+        <div style="background:rgba(10,4,20,.4);padding:12px;border-radius:12px;">
+          <div class="muted" style="font-size:13px;">🎯 PRIX MAXIMUM</div>
+          <div class="scoreBig" style="font-size:34px;color:var(--green);">${money(offreMax)}</div>
+          <div class="muted" style="font-size:12px;">Bénéfice estimé : <span class="${beneficeMax >= 0 ? 'green' : 'red'}">${money(beneficeMax)}</span></div>
+        </div>
+      </div>
+      
+      <div style="background:rgba(10,4,20,.4);padding:12px;border-radius:12px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span class="muted">💰 BÉNÉFICE POTENTIEL</span>
+          <span class="${beneficeDepart >= 0 ? 'green' : 'red'}" style="font-weight:800;font-size:18px;">${money(beneficeDepart)} → ${money(beneficeMax)}</span>
+        </div>
+      </div>
+      
+      <div style="background:rgba(10,4,20,.4);padding:12px;border-radius:12px;">
+        <div class="muted" style="font-size:13px;margin-bottom:4px;">📊 DÉTAIL DES COÛTS</div>
+        <div style="font-size:13px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;">
+          <span>Prix d'achat</span><span></span><span>${money(ask)}</span>
+          <span>Réparations (coeff 0.8)</span><span></span><span style="color:var(--orange);">${money(Math.round(rep * 0.8))}</span>
+          <span>Autres frais</span><span></span><span style="color:var(--orange);">${money(Math.round(other * 0.9))}</span>
+          <span style="border-top:1px solid var(--glassBorder);">Coût total estimé</span><span style="border-top:1px solid var(--glassBorder);"></span><span style="border-top:1px solid var(--glassBorder);font-weight:800;">${money(offreDepart + rep + other)}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div style="margin-top:12px;padding:12px;border-radius:12px;background:rgba(10,4,20,.3);">
+      <div style="font-weight:600;margin-bottom:4px;">💬 ARGUMENTS DE NÉGOCIATION</div>
+      ${arguments.map(arg => `<div style="font-size:13px;padding:3px 0;color:var(--muted);">• ${arg}</div>`).join('')}
+      <div style="margin-top:6px;font-size:14px;font-weight:600;color:var(--${recClass});">${recommendation}</div>
+    </div>
+    
+    ${!prixMarche ? '<div style="margin-top:8px;font-size:12px;color:var(--orange);">⚠️ Marque non reconnue, le prix de marché est une estimation basée sur le prix demandé.</div>' : ''}
+  </div>`;
+}
+
+// ============================================================
+// 📝 AUTHENTIFICATION ET GESTION DES DONNÉES (SÉCURISÉE)
+// ============================================================
+async function loginOrSignup(){
+ const email=$('authEmail').value.trim();
+ const pin=$('authPin').value.trim();
+ const msg=$('authMsg1');
+ if(!email||!email.includes('@')){msg.textContent='Entre un email valide.';msg.className='authMsg err';return}
+ if(!/^\d{6}$/.test(pin)){msg.textContent='Le code doit faire exactement 6 chiffres.';msg.className='authMsg err';return}
+ msg.textContent='Connexion...';msg.className='authMsg';
+ 
+ // Vérification que Supabase est disponible
+ if (!sb) {
+   msg.textContent='Erreur : Supabase non configuré. Voir la bannière de sécurité.';
+   msg.className='authMsg err';
+   return;
+ }
+ 
+ let {data,error}=await sb.auth.signInWithPassword({email,password:pin});
+ if(error){
+   if(error.message&&error.message.toLowerCase().includes('invalid')){
+     const res=await sb.auth.signUp({email,password:pin});
+     if(res.error){msg.textContent='Erreur : '+res.error.message;msg.className='authMsg err';return}
+     data=res.data;
+   }else{
+     msg.textContent='Erreur : '+error.message;msg.className='authMsg err';return
+   }
+ }
+ currentUser=data.user;
+ await afterLogin();
+}
+
+async function logout(){
+ if (!sb) {
+   currentUser=null;
+   cars=[];
+   localStorage.removeItem(KEY);
+   $('appRoot').style.display='none';
+   $('authScreen').style.display='grid';
+   $('authEmail').value='';$('authPin').value='';
+   $('authMsg1').textContent='';
+   return;
+ }
+ 
+ await sb.auth.signOut();
+ currentUser=null;
+ cars=[];
+ localStorage.removeItem(KEY);
+ $('appRoot').style.display='none';
+ $('authScreen').style.display='grid';
+ $('authEmail').value='';$('authPin').value='';
+ $('authMsg1').textContent='';
+}
+
+async function afterLogin(){
+ if (!currentUser) return;
+ 
+ $('settingsEmail').textContent=currentUser.email;
+ $('profileEmail').textContent=currentUser.email.split('@')[0];
+ await loadCarsFromCloud();
+ $('authScreen').style.display='none';
+ $('appRoot').style.display='flex';
+ renderAll();
+}
+
+function toggleAccountMenu(){
+ const m=$('accountMenu');
+ m.style.display=m.style.display==='none'?'block':'none';
+}
+
+async function deleteAccount(){
+ if(!confirm('Supprimer définitivement ton compte et toutes tes voitures ? Cette action est irréversible.'))return;
+ if(!currentUser)return;
+ 
+ if (sb) {
+   await sb.from('cars').delete().eq('user_id',currentUser.id);
+   await sb.from('suggestions').delete().eq('user_id',currentUser.id);
+   await sb.auth.signOut();
+ }
+ 
+ currentUser=null;
+ cars=[];
+ localStorage.removeItem(KEY);
+ $('appRoot').style.display='none';
+ $('authScreen').style.display='grid';
+ $('authEmail').value='';$('authPin').value='';
+ $('authMsg1').textContent='';
+ notify('Compte et données supprimés');
+}
+
+async function loadCarsFromCloud(){
+ if (!sb || !currentUser) {
+   // Charger depuis localStorage uniquement
+   cars = JSON.parse(localStorage.getItem(KEY)||'[]');
+   return;
+ }
+ 
+ const {data,error}=await sb.from('cars').select('payload').eq('user_id',currentUser.id).order('updated_at',{ascending:false});
+ if(error){notify('Erreur de chargement : '+error.message);return}
+ cars=(data||[]).map(r=>r.payload);
+ localStorage.setItem(KEY,JSON.stringify(cars));
+}
+
+async function syncCarToCloud(car){
+ if(!currentUser || !sb) return;
+ const {error}=await sb.from('cars').upsert({id:car.id,user_id:currentUser.id,payload:car,updated_at:new Date().toISOString()});
+ if(error)notify('Erreur de sauvegarde en ligne : '+error.message);
+}
+
+async function deleteCarFromCloud(id){
+ if(!currentUser || !sb) return;
+ await sb.from('cars').delete().eq('id',id).eq('user_id',currentUser.id);
+}
+
+async function clearAllCloud(){
+ if(!currentUser || !sb) return;
+ await sb.from('cars').delete().eq('user_id',currentUser.id);
+}
+
+function save(){
+ localStorage.setItem(KEY,JSON.stringify(cars));
+ renderAll();
+}
+
+function notify(t){
+ const x=$('toast');
+ x.textContent=t;
+ x.style.display='block';
+ setTimeout(()=>x.style.display='none',2800)
+}
+
+function go(page){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.querySelector('#'+page).classList.add('active');
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
+ const titles={
+   home:['Bienvenue 👋','Prêt à dénicher la prochaine pépite ?'],
+   analyze:['Analyse','Décortique une annonce avant d\u2019acheter.'],
+   stock:['Mon Stock','Toutes tes voitures au même endroit.'],
+   negotiation:['Négociation','Trouve ton prix d\u2019offre et ton prix maximum.'],
+   business:['Business','Suis ton argent et ta rentabilité.'],
+   history:['Historique','Toutes tes opérations.'],
+   suggestions:['💡 Suggestions','Propose et vote pour les prochaines fonctionnalités.'],
+   settings:['Paramètres','Personnalise et gère tes données.']
+ };
+ $('pageTitle').textContent=titles[page][0];
+ $('pageSub').textContent=titles[page][1];
+ if(page==='negotiation')fillNegotiationPicker();
+ if(page==='suggestions')loadSuggestions()
+}
+
+function fillNegotiationPicker(){
+ const sel=$('nCarPicker');
+ const current=sel.value;
+ sel.innerHTML='<option value="">— Choisir un véhicule —</option>'+cars.map(c=>`<option value="${c.id}">${c.brand||''} ${c.model||''} (${c.year||'?'})</option>`).join('');
+ sel.value=current;
+}
+
+function fillNegotiationFromCar(id){
+ if(!id)return;
+ const c=cars.find(x=>String(x.id)===String(id));
+ if(!c)return;
+ $('nAsk').value=c.buy||'';
+ $('nBrand').value=c.brand||'';
+ $('nModel').value=c.model||'';
+ $('nYear').value=c.year||'';
+ $('nKm').value=c.km||'';
+ $('nRep').value=c.repairs||0;
+ $('nOther').value=(Number(c.transport)||0)+(Number(c.admin)||0)+(Number(c.clean)||0)+(Number(c.other)||0);
+ $('nState').value=c.state||'Bon';
+}
+
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
+
+function toggleTheme(){
+ document.body.classList.toggle('light');
+ notify('Mode visuel modifié')
+}
+
+function parseAd(){
+ let t=$('adText').value;
+ const year=t.match(/\b(20\d{2}|19\d{2})\b/); 
+ const km=t.match(/([\d\s.]{3,})\s*km/i); 
+ const price=t.match(/([\d\s.]{3,})\s*€/)||t.match(/€\s*([\d\s.]{3,})/);
+ if(year)$('aYear').value=year[1]; 
+ if(km)$('aKm').value=km[1].replace(/[^\d]/g,''); 
+ if(price)$('aPrice').value=price[1].replace(/[^\d]/g,'');
+ const brands=['Audi','BMW','Mercedes','Volkswagen','Peugeot','Renault','Citroën','Toyota','Honda','Ford','Opel','Skoda','Seat','Nissan','Kia','Hyundai','Dacia','Volvo'];
+ const b=brands.find(x=>new RegExp('\\b'+x+'\\b','i').test(t)); 
+ if(b)$('aBrand').value=b;
+ const low=t.toLowerCase(); 
+ if(/diesel|tdi|hdi|dci/.test(low))$('aFuel').value='Diesel'; 
+ else if(/hybride|hybrid/.test(low))$('aFuel').value='Hybride'; 
+ else if(/électrique|electrique|electric/.test(low))$('aFuel').value='Électrique';
+ if(/automatique|auto\b|dsg|s tronic|steptronic/.test(low))$('aGear').value='Automatique';
+ notify('Informations détectées — vérifie-les avant analyse');
+}
+
+function analyze(){
+ const d={brand:$('aBrand').value||'Marque inconnue',model:$('aModel').value||'Modèle inconnu',year:+$('aYear').value||0,km:+$('aKm').value||0,price:+$('aPrice').value||0,fuel:$('aFuel').value,gear:$('aGear').value,owners:+$('aOwners').value||0,state:$('aState').value,history:$('aHistory').value,ct:$('aCt').value,urgent:$('aUrgent').value,defects:$('aDefects').value};
+ let score=70, reasons=[];
+ if(d.year>=2015)score+=7; else if(d.year&&d.year<2012)score-=8;
+ if(d.km>180000) {score-=18;reasons.push('Kilométrage élevé')} else if(d.km>140000) {score-=8;reasons.push('Kilométrage à surveiller')}
+ if(d.history==='Complet')score+=8; else if(d.history==='Aucun'){score-=15;reasons.push('Historique d\u2019entretien absent')}
+ if(d.ct==='Valide <6 mois')score+=5; else if(d.ct==='Non disponible'){score-=8;reasons.push('Contrôle technique non disponible')}
+ if(d.state==='Excellent')score+=6; else if(d.state==='Moyen')score-=8; else if(d.state==='Mauvais')score-=18;
+ if(d.urgent==='Oui')score+=3;
+ if(d.owners>=4){score-=5;reasons.push('Nombre de propriétaires élevé')}
+ const defectWords=(d.defects.match(/pneu|frein|embrayage|distribution|moteur|boîte|boite|voyant|corrosion|turbo|fuite|carrosserie/gi)||[]).length;
+ score-=Math.min(20,defectWords*4); 
+ if(defectWords)reasons.push(defectWords+' défaut(s) à contrôler');
+ score=Math.max(0,Math.min(100,score));
+ let decision=score>=80?'ACHETER':score>=60?'NÉGOCIER':'FUIR', cls=score>=80?'good':score>=60?'mid':'bad';
+ const baseRepair=Math.max(0,defectWords*250), transport=350, admin=180, clean=120, total=d.price+baseRepair+transport+admin+clean, resale=d.price?Math.round(d.price*1.17):0, profit=resale-total, roi=total?profit/total*100:0;
+ $('analysisResult').innerHTML=`<div class="result"><div class="row"><div><div class="muted">RECOMMANDATION</div><div class="decision ${cls}">${decision}</div></div><div style="text-align:right"><div class="muted">SCORE</div><div class="scoreBig ${cls}">${score}<small>/100</small></div></div></div>
+ <div class="meter"><i style="width:${score}%"></i></div><p>${score>=80?'Profil intéressant, mais contrôle physique indispensable.':score>=60?'Potentiel intéressant si le prix est négocié et les défauts maîtrisés.':'Risque trop élevé ou marge insuffisante dans cet état.'}</p>
+ <div class="costs"><div class="card"><span class="muted">Coût estimé</span><br><b>${money(total)}</b></div><div class="card"><span class="muted">Revente estimée</span><br><b>${money(resale)}</b></div><div class="card"><span class="muted">Bénéfice potentiel</span><br><b class="${profit>=0?'green':'red'}">${money(profit)}</b></div></div>
+ ${reasons.length?'<div style="margin-top:15px"><b>⚠️ Points à vérifier</b>'+reasons.map(r=>'<div class="warning">'+r+'</div>').join('')+'</div>':''}
+ <div class="btnRow"><button class="btn primary" onclick='saveAnalysis(${JSON.stringify(d).replace(/'/g,"&#39;")},${score},${total},${profit},${roi})'>💾 Ajouter au stock</button><button class="btn" onclick="go('negotiation');$('nAsk').value=${d.price};$('nBrand').value='${d.brand}';$('nModel').value='${d.model}';$('nYear').value=${d.year};$('nKm').value=${d.km};$('nRep').value=${baseRepair};$('nOther').value=${transport+admin+clean};$('nState').value='${d.state}'">🎯 Négocier ce véhicule</button></div></div>`;
+}
+
+function saveAnalysis(d,score,total,profit,roi){
+ d.id=Date.now();
+ d.status='En cours';
+ d.buy=d.price;
+ d.sell=0;
+ d.transport=350;
+ d.repairs=Math.max(0,(d.defects.match(/pneu|frein|embrayage|distribution|moteur|boîte|boite|voyant|corrosion|turbo|fuite|carrosserie/gi)||[]).length*250);
+ d.admin=180;
+ d.clean=120;
+ d.other=0;
+ d.dateBuy=new Date().toISOString().slice(0,10);
+ d.score=score;
+ d.repairsList=[];
+ d.checklist=[];
+ cars.unshift(d);
+ save();
+ syncCarToCloud(d);
+ notify('Véhicule ajouté au stock 🚗');
+ go('stock')
+}
+
+function resetAnalyze(){
+ document.querySelectorAll('#analyze input,#analyze textarea').forEach(x=>x.value='');
+ $('analysisResult').innerHTML='';
+ $('aFuel').value='Essence';
+ $('aGear').value='Manuelle';
+ $('aState').value='Excellent';
+ $('aHistory').value='Complet';
+ $('aCt').value='Valide <6 mois';
+ $('aUrgent').value='Non'
+}
+
+function compressImage(file,maxDim,quality){
+ return new Promise((resolve,reject)=>{  
+  const img=new Image();
+  const reader=new FileReader();
+  reader.onload=ev=>{img.src=ev.target.result};
+  reader.onerror=reject;
+  img.onload=()=>{
+   let w=img.width,h=img.height;
+   if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim}
+   else if(h>=w&&h>maxDim){w=Math.round(w*maxDim/h);h=maxDim}
+   const canvas=document.createElement('canvas');
+   canvas.width=w;canvas.height=h;
+   canvas.getContext('2d').drawImage(img,0,0,w,h);
+   resolve(canvas.toDataURL('image/jpeg',quality));
+  };
+  img.onerror=reject;
+  reader.readAsDataURL(file);
+ });
+}
+
+function handleProfileUpload(e){
+ const file=e.target.files[0]; if(!file)return;
+ if(file.size>15*1024*1024){notify('Photo trop lourde (max 15 Mo)');e.target.value='';return}
+ compressImage(file,900,0.75).then(url=>{tempProfilePhoto=url;openVehicleRefreshProfile()}).catch(()=>notify('Erreur lors du traitement de la photo'));
+ e.target.value='';
+}
+
+function removeProfilePhoto(){tempProfilePhoto='';openVehicleRefreshProfile()}
+
+function openVehicleRefreshProfile(){
+ const p=$('vProfilePreview');
+ p.style.backgroundImage=tempProfilePhoto?`url('${tempProfilePhoto}')`:'';
+ p.textContent=tempProfilePhoto?'':'🚗';
+ const btnWrap=p.nextElementSibling;
+ btnWrap.innerHTML=`<input type="file" accept="image/*" id="vProfileInput" style="display:none" onchange="handleProfileUpload(event)"><button type="button" class="btn" onclick="$('vProfileInput').click()">📷 ${tempProfilePhoto?'Changer':'Choisir'} la photo</button>${tempProfilePhoto?'<button type="button" class="btn redBtn" style="margin-left:6px" onclick="removeProfilePhoto()">Retirer</button>':''}`;
+}
+
+function renderObsGallery(){
+ const g=$('vObsGallery');
+ if(!g)return;
+ g.innerHTML=tempObsPhotos.length?tempObsPhotos.map((p,i)=>`<div style="position:relative;width:78px;height:62px"><div style="width:100%;height:100%;border-radius:10px;background:url('${p}') center/cover no-repeat;border:1px solid var(--glassBorder)"></div><button type="button" onclick="removeObsPhotoAt(${i})" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);color:white;font-size:11px;line-height:1;display:grid;place-items:center;border:0">✕</button></div>`).join(''):'<div class="muted" style="font-size:13px">Aucune photo d\'historique.</div>';
+}
+
+function handleObsUpload(e){
+ const file=e.target.files[0]; if(!file)return;
+ if(file.size>15*1024*1024){notify('Photo trop lourde (max 15 Mo)');e.target.value='';return}
+ compressImage(file,700,0.7).then(url=>{tempObsPhotos.push(url);renderObsGallery()}).catch(()=>notify('Erreur lors du traitement de la photo'));
+ e.target.value='';
+}
+
+function removeObsPhotoAt(i){tempObsPhotos.splice(i,1);renderObsGallery()}
+
+function closeModal(){$('modal').style.display='none'}
+
+function renderRepairs() {
+  const container = document.getElementById('vRepairsList');
+  const totalSpan = document.getElementById('vRepairsTotal');
+  if (!container) return;
+  if (!tempRepairs || tempRepairs.length === 0) {
+    container.innerHTML = '<div class="muted" style="font-size:13px;">Aucune réparation ajoutée. Ajoute tes vrais devis ci-dessus.</div>';
+    if (totalSpan) totalSpan.textContent = '0 €';
+    return;
+  }
+  container.innerHTML = tempRepairs.map((r, i) =>
+    `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--glassBorder);align-items:center;">
+      <span style="font-size:14px;">${r.name}</span>
+      <span style="font-size:14px;">${Number(r.price).toLocaleString('fr-BE')} € <button onclick="removeRepair(${i})" style="background:var(--red);color:white;border:0;border-radius:6px;padding:2px 8px;margin-left:8px;cursor:pointer;">✕</button></span>
+    </div>`
+  ).join('');
+  if (totalSpan) {
+    const sum = tempRepairs.reduce((acc, r) => acc + Number(r.price), 0);
+    totalSpan.textContent = sum.toLocaleString('fr-BE') + ' €';
+  }
+}
+
+function addRepair() {
+  const name = document.getElementById('vRepName').value.trim();
+  const price = parseFloat(document.getElementById('vRepPrice').value);
+  if (!name || isNaN(price) || price <= 0) { 
+    notify('Entre un nom et un prix valide (ex: Courroie, 650)'); 
+    return; 
+  }
+  tempRepairs.push({ name, price });
+  document.getElementById('vRepName').value = '';
+  document.getElementById('vRepPrice').value = '';
+  renderRepairs();
+}
+
+function removeRepair(index) {
+  tempRepairs.splice(index, 1);
+  renderRepairs();
+}
+
+function openVehicle(id=null){
+ const c=id?cars.find(x=>x.id===id):{};
+ tempProfilePhoto=c.profilePhoto||c.photo||'';
+ tempObsPhotos=[...(c.obsPhotos||[])];
+ let existingList = c.repairsList || [];
+ if (c.repairs && existingList.length === 0) {
+   existingList = [{ name: 'Réparations estimées (ancien)', price: Number(c.repairs) }];
+ }
+ tempRepairs = existingList.map(r => ({ name: r.name, price: Number(r.price) }));
+ tempChecklist = c.checklist || [];
+
+ $('vehicleForm').innerHTML = `
+ <div class="field full" style="margin-bottom:14px">
+ <label>📸 PHOTO DE PROFIL (celle visible dans le stock)</label>
+ <div style="display:flex;gap:12px;align-items:center">
+   <div id="vProfilePreview" style="width:72px;height:72px;border-radius:50%;background:#0c1018${tempProfilePhoto?` url('${tempProfilePhoto}') center/cover no-repeat`:''};border:1px solid var(--glassBorder);display:grid;place-items:center;font-size:24px;flex-shrink:0">${tempProfilePhoto?'':'🚗'}</div>
+   <div>
+     <input type="file" accept="image/*" id="vProfileInput" style="display:none" onchange="handleProfileUpload(event)">
+     <button type="button" class="btn" onclick="$('vProfileInput').click()">📷 ${tempProfilePhoto?'Changer':'Choisir'} la photo</button>
+     ${tempProfilePhoto?'<button type="button" class="btn redBtn" style="margin-left:6px" onclick="removeProfilePhoto()">Retirer</button>':''}
+   </div>
+ </div>
+ <p class="muted" style="font-size:12px;margin:6px 0 0">Photo principale pour reconnaître la voiture dans la liste.</p>
+ </div>
+
+ <div class="formGrid">
+ <div class="field"><label>MARQUE</label><input id="vBrand" value="${c.brand||''}"></div><div class="field"><label>MODÈLE</label><input id="vModel" value="${c.model||''}"></div>
+ <div class="field"><label>ANNÉE</label><input id="vYear" type="number" value="${c.year||''}"></div><div class="field"><label>KM</label><input id="vKm" type="number" value="${c.km||''}"></div>
+ <div class="field"><label>PRIX ACHAT (€)</label><input id="vBuy" type="number" value="${c.buy||''}"></div><div class="field"><label>PRIX VENTE (€)</label><input id="vSell" type="number" value="${c.sell||''}"></div>
+ <div class="field"><label>TRANSPORT</label><input id="vTransport" type="number" value="${c.transport||0}"></div>
+ <div class="field"><label>ADMIN / CT</label><input id="vAdmin" type="number" value="${c.admin||0}"></div>
+ <div class="field"><label>NETTOYAGE</label><input id="vClean" type="number" value="${c.clean||0}"></div>
+ <div class="field"><label>AUTRES FRAIS</label><input id="vOther" type="number" value="${c.other||0}"></div>
+ <div class="field"><label>STATUT</label><select id="vStatus"><option ${c.status==='Achetée'?'selected':''}>Achetée</option><option ${c.status==='Vendue'?'selected':''}>Vendue</option><option ${(!c.status||c.status==='En cours')?'selected':''}>En cours</option></select></div>
+ <div class="field"><label>ÉTAT GÉNÉRAL</label><select id="vState"><option ${c.state==='Excellent'?'selected':''}>Excellent</option><option ${c.state==='Très bon'?'selected':''}>Très bon</option><option ${(!c.state||c.state==='Bon')?'selected':''}>Bon</option><option ${c.state==='Moyen'?'selected':''}>Moyen</option><option ${c.state==='Mauvais'?'selected':''}>Mauvais</option></select></div>
+ </div>
+
+ <div class="field full" style="margin-top:10px;border-top:1px solid var(--glassBorder);padding-top:16px;">
+   <label>🔧 LISTE DES RÉPARATIONS / FRAIS (ajoute tes vrais devis)</label>
+   <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+     <input id="vRepName" placeholder="Nom (ex: Courroie distribution)" style="flex:2;min-width:150px;padding:10px;background:#0c1018;border:1px solid var(--glassBorder);border-radius:10px;color:white;">
+     <input id="vRepPrice" type="number" placeholder="Prix (€)" style="flex:1;min-width:100px;padding:10px;background:#0c1018;border:1px solid var(--glassBorder);border-radius:10px;color:white;">
+     <button class="btn primary" onclick="addRepair()" style="white-space:nowrap;">➕ Ajouter</button>
+   </div>
+   <div id="vRepairsList" style="margin-bottom:8px;"></div>
+   <div style="display:flex;justify-content:space-between;background:#0c1018;padding:10px 14px;border-radius:10px;border:1px solid var(--glassBorder);">
+     <b>💰 Total réparations estimées :</b>
+     <b id="vRepairsTotal" style="color:var(--green);">0 €</b>
+   </div>
+   <div class="warning" style="margin-top:8px;font-size:13px;">
+     ⚠️ Ce sont tes estimations personnelles. Les prix réels varient selon le modèle, l'année et le garage. 
+     <br>➡️ Rentre ici les vrais montants de tes devis pour un calcul de rentabilité juste.
+   </div>
+ </div>
+
+ <div class="field full" style="margin-top:10px;border-top:1px solid var(--glassBorder);padding-top:16px;">
+   <label>📸 HISTORIQUE & DÉFAUTS (photos)</label>
+   <p class="muted" style="font-size:12px;margin:0 0 8px;">Prends en photo les défauts, l'état avant/après, les factures ou l'historique du véhicule.</p>
+   <div id="vObsGallery" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;"></div>
+   <input type="file" accept="image/*" id="vObsInput" style="display:none" onchange="handleObsUpload(event)">
+   <button type="button" class="btn" onclick="$('vObsInput').click()">📷 Ajouter une photo d'historique</button>
+ </div>
+
+ <div class="field full" style="margin-top:10px;border-top:1px solid var(--glassBorder);padding-top:16px;">
+   <label>📋 CHECKLIST D'INSPECTION ${c.brand ? ' - '+c.brand+' '+c.model : ''}</label>
+   <p class="muted" style="font-size:12px;margin:0 0 8px;">Coche les points que tu as vérifiés lors de l'inspection du véhicule.</p>
+   <div id="vChecklistContainer" style="max-height:600px;overflow-y:auto;padding-right:6px;"></div>
+ </div>
+
+ <div class="field full"><label>NOTES INSPECTION / OBSERVATIONS</label><textarea id="vNotes">${c.notes||''}</textarea></div>
+ <div class="btnRow"><button class="btn primary" onclick="saveVehicle(${id||0})">💾 Sauver</button><button class="btn" onclick="closeModal()">Annuler</button></div>`;
+ 
+ renderObsGallery();
+ renderRepairs();
+ renderChecklist(tempChecklist);
+ $('modal').style.display='grid'
+}
+
+function saveVehicle(id){
+ const old=id?cars.find(x=>x.id===id):{};
+ const repairsList = tempRepairs.map(r => ({ name: r.name, price: Number(r.price) }));
+ const repairsSum = repairsList.reduce((acc, r) => acc + r.price, 0);
+ const checklist = getChecklistState();
+
+ const c={...old,id:id||Date.now(),profilePhoto:tempProfilePhoto,photo:tempProfilePhoto,obsPhotos:tempObsPhotos,brand:$('vBrand').value,model:$('vModel').value,year:+$('vYear').value||0,km:+$('vKm').value||0,buy:+$('vBuy').value||0,sell:+$('vSell').value||0,transport:+$('vTransport').value||0,admin:+$('vAdmin').value||0,clean:+$('vClean').value||0,other:+$('vOther').value||0,status:$('vStatus').value,state:$('vState').value,notes:$('vNotes').value,dateBuy:old.dateBuy||new Date().toISOString().slice(0,10),
+ repairs: repairsSum,
+ repairsList: repairsList,
+ checklist: checklist
+};
+ const i=cars.findIndex(x=>x.id===c.id); 
+ if(i>=0)cars[i]=c;else cars.unshift(c);
+ closeModal();save();syncCarToCloud(c);
+ notify('Véhicule sauvegardé 💾')
+}
+
+function totals(c){
+ const cost=(+c.buy||0)+(+c.transport||0)+(+c.repairs||0)+(+c.admin||0)+(+c.clean||0)+(+c.other||0);
+ const profit=(+c.sell||0)-cost;
+ return {cost,profit,roi:cost?profit/cost*100:0}
+}
+
+function renderStock(){
+ const el=$('stockList');
+ if(!cars.length){el.innerHTML='<div class="card empty">Aucun véhicule. Ajoute ta première voiture.</div>';return}
+ el.innerHTML=cars.map(c=>{
+   const t=totals(c); 
+   const repCount = (c.repairsList||[]).length; 
+   const checklistCount = (c.checklist||[]).length; 
+   const totalChecklist = CHECKLIST_ITEMS.length; 
+   return `<div class="card vehicle">
+     <div style="height:120px;${c.photo?`background:url('${c.photo}') center/cover no-repeat`:'background:linear-gradient(135deg,#20283a,#10141e);display:grid;place-items:center;font-size:45px'}">${c.photo?'':'🚗'}</div>
+     <div class="vehicleBody">
+       <div class="row"><b>${c.brand||'—'} ${c.model||''}</b><span class="pill">${c.status||'En cours'}</span></div>
+       <p class="muted">${c.year||'—'} • ${(c.km||0).toLocaleString('fr-BE')} km</p>
+       <div class="row"><b>${money(c.buy)}</b><span class="${t.profit>=0?'green':'red'}">${money(t.profit)}</span></div>
+       <p class="muted">ROI ${pct(t.roi)} ${repCount > 0 ? '• 📝 '+repCount+' réparations' : ''} ${checklistCount > 0 ? '• 📋 '+checklistCount+'/'+totalChecklist : '• 📋 0/'+totalChecklist}</p>
+       <div class="btnRow">
+         <button class="btn" onclick="openVehicle(${c.id})">Modifier</button>
+         <button class="btn redBtn" onclick="removeCar(${c.id})">Supprimer</button>
+       </div>
+     </div>
+   </div>`
+ }).join('')
+}
+
+function removeCar(id){
+ if(confirm('Supprimer ce véhicule ?')){
+   cars=cars.filter(c=>c.id!==id);
+   save();
+   deleteCarFromCloud(id);
+   notify('Véhicule supprimé')
+ }
+}
+
+function renderBusiness(){
+ let sales=0,cost=0,profit=0;
+ cars.forEach(c=>{
+   const t=totals(c);
+   sales+=+c.sell||0;
+   cost+=t.cost;
+   profit+=t.profit
+ });
+ const roi=cost?profit/cost*100:0;
+ $('bSales').textContent=money(sales);
+ $('bCost').textContent=money(cost);
+ $('bProfit').textContent=money(profit);
+ $('bROI').textContent=pct(roi);
+ $('businessRows').innerHTML=cars.length?cars.slice(0,8).map(c=>{
+   const t=totals(c);
+   return `<div style="padding:14px 0;border-bottom:1px solid var(--glassBorder)" class="row">
+     <span><b>${c.brand} ${c.model}</b><br><small class="muted">${c.status}</small></span>
+     <span class="${t.profit>=0?'green':'red'}"><b>${money(t.profit)}</b><br><small>ROI ${pct(t.roi)}</small></span>
+   </div>`
+ }).join(''):'<div class="empty">Pas encore de données business.</div>'
+}
+
+function renderHistory(){
+ $('historyBody').innerHTML=cars.length?cars.map(c=>{
+   const t=totals(c);
+   return `<tr><td><b>${c.brand} ${c.model}</b></td><td>${money(c.buy)}</td><td>${money(c.sell)}</td><td>${money(t.cost)}</td><td class="${t.profit>=0?'green':'red'}">${money(t.profit)}</td><td>${pct(t.roi)}</td><td>${c.status}</td></tr>`
+ }).join(''):'<tr><td colspan="7" class="empty">Aucun historique.</td></tr>'
+}
+
+function renderHome(){
+ let profit=0,cost=0;
+ cars.forEach(c=>{
+   const t=totals(c);
+   profit+=t.profit;
+   cost+=t.cost
+ });
+ $('sCars').textContent=cars.length;
+ $('sProfit').textContent=money(profit);
+ $('sROI').textContent=pct(cost?profit/cost*100:0);
+ $('sPending').textContent=cars.filter(c=>c.status==='En cours').length;
+ const r=cars.slice(0,3);
+ $('recent').innerHTML=r.length?r.map(c=>{
+   const t=totals(c);
+   return `<div class="card">
+     <div class="row">
+       <span class="pill ${c.score>=80?'green':c.score>=60?'orange':'red'}">${c.score?c.score+'/100':'Véhicule'}</span>
+       <span class="muted">${c.status}</span>
+     </div>
+     <h3>${c.brand} ${c.model}</h3>
+     <p class="muted">${c.year||'—'} • ${(c.km||0).toLocaleString('fr-BE')} km</p>
+     <div class="row"><b>${money(c.buy)}</b><b class="${t.profit>=0?'green':'red'}">${money(t.profit)}</b></div>
+   </div>`
+ }).join(''):'<div class="card empty">Tes dernières analyses apparaîtront ici.</div>'
+}
+
+function renderAll(){
+ renderHome();
+ renderStock();
+ renderBusiness();
+ renderHistory()
+}
+
+function clearAll(){
+ if(confirm('Effacer toutes les données ?')){
+   cars=[];
+   save();
+   clearAllCloud();
+   notify('Données effacées')
+ }
+}
+
+async function checkSession(){
+ if (!sb) {
+   // Mode localStorage uniquement
+   const savedCars = localStorage.getItem(KEY);
+   if (savedCars) {
+     cars = JSON.parse(savedCars);
+     renderAll();
+   }
+   $('authScreen').style.display='grid';
+   $('appRoot').style.display='none';
+   return;
+ }
+ 
+ const {data}=await sb.auth.getSession();
+ if(data.session){
+   const {data:userCheck,error:userErr}=await sb.auth.getUser();
+   if(userErr||!userCheck.user){
+     await sb.auth.signOut();
+     currentUser=null;
+     localStorage.removeItem(KEY);
+     $('authScreen').style.display='grid';
+     $('appRoot').style.display='none';
+     return;
+   }
+   currentUser=data.session.user;
+   await afterLogin();
+ }else{
+   $('authScreen').style.display='grid';
+   $('appRoot').style.display='none';
+ }
+}
+
+function enterApp(){
+ $('landingScreen').style.display='none';
+ // Vérifier si on a déjà une session
+ if (sb) {
+   checkSession();
+ } else {
+   // Mode localStorage
+   $('authScreen').style.display='grid';
+ }
+}
+
+async function loadSuggestions(){
+ const el=$('suggestionsList');
+ el.innerHTML='<p class="muted">Chargement...</p>';
+ 
+ if (!sb) {
+   el.innerHTML='<p class="muted">Supabase non configuré. Les suggestions ne sont pas disponibles.</p>';
+   return;
+ }
+ 
+ const {data,error}=await sb.from('suggestions').select('*').order('votes',{ascending:false});
+ if(error){el.innerHTML='<p class="muted">Erreur de chargement.</p>';return}
+ const isAdmin=currentUser&&currentUser.email===CONFIG.ADMIN_EMAIL;
+ if(!data||!data.length){el.innerHTML='<p class="muted">Aucune suggestion pour l\'instant. Sois le premier !</p>';return}
+ el.innerHTML=data.map(s=>{
+  const voters=s.voters||[];
+  const hasVoted=currentUser&&voters.includes(currentUser.id);
+  return `<div class="card" style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+   <div style="flex:1">
+    <p style="margin:0 0 6px">${(s.text||'').replace(/</g,'&lt;')}${s.done?' <span style="color:var(--green);font-size:12px">✓ Fait</span>':''}</p>
+    <span class="muted" style="font-size:12px">par Anonyme</span>
+   </div>
+   <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+    <button class="btn" style="padding:8px 12px" onclick="voteSuggestion(${s.id},${hasVoted})">${hasVoted?'✓':'▲'} ${s.votes||0}</button>
+    ${isAdmin?`<button class="btn redBtn" style="padding:6px 10px;font-size:12px" onclick="deleteSuggestion(${s.id})">Suppr.</button>${!s.done?`<button class="btn" style="padding:6px 10px;font-size:12px" onclick="markDone(${s.id})">✓ Fait</button>`:''}`:''}
+   </div>
+  </div>`;
+ }).join('');
+}
+
+async function postSuggestion(){
+ const text=$('sugText').value.trim();
+ if(!text){notify('Écris une suggestion d\'abord');return}
+ if(!currentUser){notify('Connecte-toi d\'abord');return}
+ 
+ if (!sb) {
+   notify('Supabase non configuré');
+   return;
+ }
+ 
+ const {error}=await sb.from('suggestions').insert({text,email:currentUser.email,user_id:currentUser.id,votes:0,voters:[]});
+ if(error){notify('Erreur : '+error.message);return}
+ $('sugText').value='';
+ notify('Suggestion envoyée 💡');
+ loadSuggestions();
+}
+
+async function voteSuggestion(id,hasVoted){
+ if(!currentUser){notify('Connecte-toi d\'abord');return}
+ 
+ if (!sb) {
+   notify('Supabase non configuré');
+   return;
+ }
+ 
+ const {data}=await sb.from('suggestions').select('votes,voters').eq('id',id).single();
+ if(!data)return;
+ let voters=data.voters||[];
+ let votes=data.votes||0;
+ if(hasVoted){voters=voters.filter(v=>v!==currentUser.id);votes=Math.max(0,votes-1)}
+ else{voters=[...voters,currentUser.id];votes=votes+1}
+ await sb.from('suggestions').update({votes,voters}).eq('id',id);
+ loadSuggestions();
+}
+
+async function deleteSuggestion(id){
+ if(!confirm('Supprimer cette suggestion ?'))return;
+ if (!sb) return;
+ await sb.from('suggestions').delete().eq('id',id);
+ loadSuggestions();
+}
+
+async function markDone(id){
+ if (!sb) return;
+ await sb.from('suggestions').update({done:true}).eq('id',id);
+ loadSuggestions();
+}
+
+// ============================================================
+// 🚀 INITIALISATION
+// ============================================================
+
+// Vérifier la configuration au démarrage
+if (CONFIG.SUPABASE_URL.includes('ton-projet') || CONFIG.SUPABASE_KEY.includes('ta_cle')) {
+  console.error('⚠️  CONFIGURATION MANQUANTE - Voir la bannière rouge en bas à droite');
+  document.getElementById('securityBanner')?.classList.add('show');
+} else {
+  // Si tout est configuré, on peut masquer la bannière
+  document.getElementById('securityBanner')?.classList.remove('show');
+}
+
+// Démarrer l'application
+enterApp();
+</script>
+</body>
+</html>
